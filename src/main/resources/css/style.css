@@ -1,0 +1,60 @@
+/* Global Styles */
+.root {
+    -fx-background-color: white;
+    -fx-font-family: 'Arial', sans-serif;
+}
+
+/* Title Styles */
+.title-label {
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+/* Game Card Styles */
+.game-card {
+    -fx-background-color: #e0e0e0;
+    -fx-background-radius: 8;
+    -fx-padding: 20;
+    -fx-alignment: center;
+    -fx-min-width: 200;
+    -fx-min-height: 180;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+    -fx-cursor: hand;
+}
+
+.game-card:hover {
+    -fx-background-color: #d0d0d0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 8, 0, 0, 2);
+}
+
+.game-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+    -fx-padding: 10 0 0 0;
+}
+
+.video-icon {
+    -fx-alignment: center-right;
+    -fx-padding: 5 0 0 0;
+    -fx-min-width: 100%;
+}
+
+.play-circle {
+    -fx-fill: #ffffff;
+    -fx-stroke: #555555;
+    -fx-stroke-width: 1.5;
+}
+
+.play-triangle {
+    -fx-fill: #555555;
+}
+
+.play-button-container:hover .play-circle {
+    -fx-stroke: #3498db;
+}
+
+.play-button-container:hover .play-triangle {
+    -fx-fill: #3498db;
+}
