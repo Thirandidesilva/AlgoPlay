@@ -99,7 +99,7 @@ public class TohAlgorithm {
 
             // 2. Randomly select number of disks (5-10)
             Random random = new Random();
-            int diskCount = random.nextInt(1) + 3;
+            int diskCount = random.nextInt(6) + 5;
 
             System.out.println("\n🎮 NEW GAME - " + diskCount + " DISKS on " + pegCount + " pegs");
 
@@ -505,7 +505,7 @@ public class TohAlgorithm {
             Integer[] disks = pegStack.toArray(new Integer[0]);
 
             for (int i = 0; i < disks.length; i++) {
-                int disk = disks[disks.length - 1 - i];
+                int disk = disks[i];
                 display[maxHeight - 1 - i][pegIndex] = String.format("[%2d]  ", disk);
             }
         }
