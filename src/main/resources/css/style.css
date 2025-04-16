@@ -1,60 +1,154 @@
-/* Global Styles */
+/* Main theme colors */
 .root {
-    -fx-background-color: white;
+    -fx-background-color: #121212;
     -fx-font-family: 'Arial', sans-serif;
 }
 
-/* Title Styles */
-.title-label {
-    -fx-font-size: 36px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #333333;
+/* Header styles */
+.header {
+    -fx-background-color: #1a1a1a;
+    -fx-border-color: #2e2e2e;
+    -fx-border-width: 0 0 1 0;
 }
 
-/* Game Card Styles */
-.game-card {
-    -fx-background-color: #e0e0e0;
-    -fx-background-radius: 8;
-    -fx-padding: 20;
-    -fx-alignment: center;
-    -fx-min-width: 200;
-    -fx-min-height: 180;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+.logo-text {
+    -fx-text-fill: #4ade80;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.logout-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #4ade80;
+    -fx-border-color: #4ade80;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8 16;
     -fx-cursor: hand;
 }
 
-.game-card:hover {
-    -fx-background-color: #d0d0d0;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 8, 0, 0, 2);
+.logout-button:hover {
+    -fx-background-color: rgba(74, 222, 128, 0.2);
+}
+
+.profile-icon {
+    -fx-background-color: #2e2e2e;
+    -fx-background-radius: 50%;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+}
+
+.profile-text {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 10px;
+}
+
+/* Game container styles */
+.game-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.game-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.game-scroll .scroll-bar:vertical,
+.game-scroll .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.game-container {
+    -fx-background-color: transparent;
+}
+
+/* Game tile styles */
+.game-tile {
+    -fx-background-color: #1e1e1e;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 5);
+    -fx-cursor: hand;
+    -fx-min-width: 150px;
+    -fx-min-height: 250px;
+    -fx-max-width: 150px;
+    -fx-max-height: 250px;
+    -fx-position: relative;
+}
+
+.game-tile-selected {
+    -fx-border-color: #4ade80;
+    -fx-border-width: 3px;
+    -fx-border-radius: 5px;
+}
+
+.game-tile-content {
+    -fx-alignment: bottom-left;
+    -fx-padding: 10;
 }
 
 .game-title {
-    -fx-font-size: 18px;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-text-fill: #333333;
-    -fx-padding: 10 0 0 0;
 }
 
-.video-icon {
-    -fx-alignment: center-right;
-    -fx-padding: 5 0 0 0;
-    -fx-min-width: 100%;
+.game-subtitle {
+    -fx-text-fill: #bbbbbb;
+    -fx-font-size: 12px;
 }
 
-.play-circle {
-    -fx-fill: #ffffff;
-    -fx-stroke: #555555;
-    -fx-stroke-width: 1.5;
+.play-button {
+    -fx-background-color: rgba(30, 30, 30, 0.8);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-padding: 8 16;
+    -fx-border-color: #4ade80;
+    -fx-border-radius: 5px;
+    -fx-cursor: hand;
 }
 
-.play-triangle {
-    -fx-fill: #555555;
+.play-button:hover {
+    -fx-background-color: rgba(74, 222, 128, 0.3);
 }
 
-.play-button-container:hover .play-circle {
-    -fx-stroke: #3498db;
+/* Game tile background images */
+.game-bg-tictactoe {
+    -fx-background-image: url('/images/tictactoe_icon.jpg');
+    -fx-background-size: cover;
 }
 
-.play-button-container:hover .play-triangle {
-    -fx-fill: #3498db;
+.game-bg-toh {
+    -fx-background-image: url('/images/hanoi_icon.jpg');
+    -fx-background-size: cover;
+}
+
+.game-bg-queens {
+    -fx-background-image: url('/images/queens_icon.jpg');
+    -fx-background-size: cover;
+}
+
+.game-bg-knights {
+    -fx-background-image: url('/images/knight_icon.jpg');
+    -fx-background-size: cover;
+}
+
+.game-bg-tsp {
+    -fx-background-image: url('/images/tsp_icon.jpg');
+    -fx-background-size: cover;
+}
+
+/* Hover overlay */
+.game-info-overlay {
+    -fx-background-color: rgba(0, 0, 0, 0.7);
+    -fx-opacity: 0;
+    -fx-padding: 10;
+}
+
+.game-tile:hover .game-info-overlay {
+    -fx-opacity: 1;
 }

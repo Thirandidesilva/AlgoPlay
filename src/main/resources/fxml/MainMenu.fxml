@@ -2,98 +2,35 @@
 
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 
-<?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Polygon?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.algoplay.controllers.MainMenuController"
-            prefHeight="600.0" prefWidth="900.0"
-            stylesheets="/css/style.css">
+            styleClass="root"
+            prefHeight="600.0" prefWidth="900.0">
     <top>
-        <VBox alignment="CENTER" spacing="20">
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="header">
             <padding>
-                <Insets top="30" />
+                <Insets top="15" right="20" bottom="15" left="20"/>
             </padding>
-            <Label text="AlgoPlay" styleClass="title-label"/>
-        </VBox>
+            <Label text="AlgoPlay" styleClass="logo-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Log-Out" styleClass="logout-button"/>
+            <StackPane styleClass="profile-icon">
+                <Label text="NO IMG" styleClass="profile-text"/>
+            </StackPane>
+        </HBox>
     </top>
 
     <center>
-        <GridPane alignment="CENTER" hgap="30" vgap="30">
-            <padding>
-                <Insets top="20" right="20" bottom="20" left="20" />
-            </padding>
-
-            <!-- First row -->
-            <VBox styleClass="game-card" GridPane.columnIndex="0" GridPane.rowIndex="0" onMouseClicked="#openTicTacToe">
-                <ImageView fitWidth="100" fitHeight="100" preserveRatio="true">
-                    <Image url="/images/tictactoe_icon.png"/>
-                </ImageView>
-                <Label text="TicTacToe" styleClass="game-title"/>
-                <HBox alignment="CENTER_RIGHT" styleClass="video-icon">
-                    <StackPane styleClass="play-button-container">
-                        <Circle radius="10" styleClass="play-circle"/>
-                        <Polygon points="-3,-5,4,0,-3,5" styleClass="play-triangle"/>
-                    </StackPane>
-                </HBox>
-            </VBox>
-
-            <VBox styleClass="game-card" GridPane.columnIndex="1" GridPane.rowIndex="0" onMouseClicked="#openTravelingSalesman">
-                <ImageView fitWidth="100" fitHeight="100" preserveRatio="true">
-                    <Image url="/images/tsp_icon.png"/>
-                </ImageView>
-                <Label text="Traveling Salesman" styleClass="game-title"/>
-                <HBox alignment="CENTER_RIGHT" styleClass="video-icon">
-                    <StackPane styleClass="play-button-container">
-                        <Circle radius="10" styleClass="play-circle"/>
-                        <Polygon points="-3,-5,4,0,-3,5" styleClass="play-triangle"/>
-                    </StackPane>
-                </HBox>
-            </VBox>
-
-            <VBox styleClass="game-card" GridPane.columnIndex="2" GridPane.rowIndex="0" onMouseClicked="#openTowerOfHanoi">
-                <ImageView fitWidth="100" fitHeight="100" preserveRatio="true">
-                    <Image url="/images/hanoi_icon.png"/>
-                </ImageView>
-                <Label text="Tower of Hanoi" styleClass="game-title"/>
-                <HBox alignment="CENTER_RIGHT" styleClass="video-icon">
-                    <StackPane styleClass="play-button-container">
-                        <Circle radius="10" styleClass="play-circle"/>
-                        <Polygon points="-3,-5,4,0,-3,5" styleClass="play-triangle"/>
-                    </StackPane>
-                </HBox>
-            </VBox>
-
-            <!-- Second row -->
-            <VBox styleClass="game-card" GridPane.columnIndex="0" GridPane.rowIndex="1" onMouseClicked="#openEightQueens">
-                <ImageView fitWidth="100" fitHeight="100" preserveRatio="true">
-                    <Image url="/images/queens_icon.png"/>
-                </ImageView>
-                <Label text="Eight Queens’ Puzzle" styleClass="game-title"/>
-                <HBox alignment="CENTER_RIGHT" styleClass="video-icon">
-                    <StackPane styleClass="play-button-container">
-                        <Circle radius="10" styleClass="play-circle"/>
-                        <Polygon points="-3,-5,4,0,-3,5" styleClass="play-triangle"/>
-                    </StackPane>
-                </HBox>
-            </VBox>
-
-            <VBox styleClass="game-card" GridPane.columnIndex="1" GridPane.rowIndex="1" onMouseClicked="#openKnightsTour">
-                <ImageView fitWidth="100" fitHeight="100" preserveRatio="true">
-                    <Image url="/images/knight_icon.png"/>
-                </ImageView>
-                <Label text="Knight's Tour " styleClass="game-title"/>
-                <HBox alignment="CENTER_RIGHT" styleClass="video-icon">
-                    <StackPane styleClass="play-button-container">
-                        <Circle radius="10" styleClass="play-circle"/>
-                        <Polygon points="-3,-5,4,0,-3,5" styleClass="play-triangle"/>
-                    </StackPane>
-                </HBox>
-            </VBox>
-        </GridPane>
+        <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="game-scroll">
+            <HBox fx:id="gameContainer" spacing="15" alignment="CENTER" styleClass="game-container">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+                <!-- Game tiles will be added programmatically -->
+            </HBox>
+        </ScrollPane>
     </center>
 </BorderPane>
