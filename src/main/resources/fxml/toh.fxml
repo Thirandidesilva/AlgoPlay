@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane stylesheets="@/css/toh.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.algoplay.controllers.games.TohController">
+    <center>
+        <SplitPane dividerPositions="0.65" prefHeight="500.0" prefWidth="900.0" BorderPane.alignment="CENTER">
+            <items>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                    <children>
+                        <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <children>
+                                        <Label styleClass="section-title" text="Tower of Hanoi">
+                                            <font>
+                                                <Font name="System Bold" size="18.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <Separator />
+                                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                                    <children>
+                                        <Label text="Number of Disks:" />
+                                        <Spinner fx:id="diskCountSpinner" editable="true" prefWidth="80.0" />
+                                        <CheckBox fx:id="fourPegModeCheckbox" mnemonicParsing="false" text="Four Peg Mode" />
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <children>
+                                        <Button fx:id="solveRecursiveBtn" mnemonicParsing="false" styleClass="algo-button" text="Solve Recursive" />
+                                        <Button fx:id="solveIterativeBtn" mnemonicParsing="false" styleClass="algo-button" text="Solve Iterative" />
+                                        <Button fx:id="solveFourPegBtn" mnemonicParsing="false" styleClass="algo-button" text="Solve Four Peg" />
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox fx:id="visualizationContainer" alignment="CENTER" minHeight="150.0" styleClass="visualization-container" VBox.vgrow="ALWAYS">
+                                    <!-- Towers will be added here dynamically -->
+                                </HBox>
+                                <GridPane hgap="10.0" vgap="5.0">
+                                    <columnConstraints>
+                                        <javafx.scene.layout.ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="150.0" />
+                                        <javafx.scene.layout.ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                        <javafx.scene.layout.ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="150.0" />
+                                        <javafx.scene.layout.ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <javafx.scene.layout.RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <javafx.scene.layout.RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <javafx.scene.layout.RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                    <children>
+                                        <Label text="Total Moves:" />
+                                        <Label fx:id="movesCountLabel" styleClass="stat-value" text="0" GridPane.columnIndex="1" />
+                                        <Label text="Optimal Moves:" GridPane.columnIndex="2" />
+                                        <Label fx:id="optimalMovesLabel" styleClass="stat-value" text="0" GridPane.columnIndex="3" />
+                                        <Label text="Recursive Time:" GridPane.rowIndex="1" />
+                                        <Label fx:id="recursiveTimeLabel" styleClass="stat-value" text="--" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label text="Iterative Time:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                        <Label fx:id="iterativeTimeLabel" styleClass="stat-value" text="--" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                        <Label text="Four Peg Time:" GridPane.rowIndex="2" />
+                                        <Label fx:id="fourPegTimeLabel" styleClass="stat-value" text="--" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </GridPane>
+                                <Label text="Move History:" />
+                                <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="100.0" VBox.vgrow="ALWAYS">
+                                    <content>
+                                        <TextArea fx:id="movesTextArea" editable="false" styleClass="moves-area" wrapText="true" />
+                                    </content>
+                                </ScrollPane>
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </VBox>
+                    </children>
+                </AnchorPane>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                    <children>
+                        <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <children>
+                                <Label styleClass="section-title" text="Algorithm Performance">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                </Label>
+                                <BarChart fx:id="algorithmComparisonChart" animated="false" legendSide="TOP" title="Average Execution Time">
+                                    <xAxis>
+                                        <CategoryAxis label="Algorithm" side="BOTTOM" />
+                                    </xAxis>
+                                    <yAxis>
+                                        <NumberAxis label="Time (ms)" side="LEFT" />
+                                    </yAxis>
+                                </BarChart>
+                                <Label styleClass="section-title" text="High Scores">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                </Label>
+                                <TableView fx:id="highScoresTable" prefHeight="200.0" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn prefWidth="100.0" text="Player" />
+                                        <TableColumn prefWidth="75.0" text="Disks" />
+                                        <TableColumn prefWidth="75.0" text="Moves" />
+                                        <TableColumn prefWidth="75.0" text="Optimal" />
+                                    </columns>
+                                </TableView>
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </VBox>
+                    </children>
+                </AnchorPane>
+            </items>
+        </SplitPane>
+    </center>
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="header-container" BorderPane.alignment="CENTER">
+            <children>
+                <Label styleClass="game-header" text="Tower of Hanoi">
+                    <font>
+                        <Font name="System Bold" size="20.0" />
+                    </font>
+                </Label>
+                <Button mnemonicParsing="false" styleClass="back-button" text="← Back to Games" />
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+            </padding>
+        </HBox>
+    </top>
+</BorderPane>

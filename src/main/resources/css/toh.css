@@ -1,0 +1,164 @@
+/* Tower of Hanoi Game Styles */
+
+/* General Game Styling */
+.header-container {
+    -fx-background-color: #3c3f41;
+    -fx-border-color: #2b2b2b;
+    -fx-border-width: 0 0 1 0;
+}
+
+.game-header {
+    -fx-text-fill: #a9b7c6;
+    -fx-font-weight: bold;
+    -fx-font-size: 20;
+}
+
+.back-button {
+    -fx-background-color: #4e5254;
+    -fx-text-fill: #a9b7c6;
+    -fx-cursor: hand;
+}
+
+.back-button:hover {
+    -fx-background-color: #5e6264;
+}
+
+.section-title {
+    -fx-text-fill: #a9b7c6;
+    -fx-font-weight: bold;
+}
+
+.stat-value {
+    -fx-text-fill: #6a8759;
+    -fx-font-weight: bold;
+}
+
+/* Algorithm Buttons */
+.algo-button {
+    -fx-background-color: #365880;
+    -fx-text-fill: white;
+    -fx-padding: 5 15;
+    -fx-cursor: hand;
+}
+
+.algo-button:hover {
+    -fx-background-color: #4682b4;
+}
+
+.algo-button:pressed {
+    -fx-background-color: #2b4666;
+}
+
+/* Moves Text Area */
+.moves-area {
+    -fx-control-inner-background: #2b2b2b;
+    -fx-text-fill: #a9b7c6;
+    -fx-font-family: monospace;
+}
+
+/* Tower of Hanoi Visualization */
+.visualization-container {
+    -fx-background-color: #3c3f41;
+    -fx-border-color: #2b2b2b;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-padding: 10;
+    -fx-alignment: center;
+    -fx-spacing: 30;
+}
+
+.peg-container {
+    -fx-min-width: 120;
+    -fx-min-height: 150;
+    -fx-pref-width: 120;
+    -fx-alignment: bottom-center;
+    -fx-padding: 10;
+}
+
+.peg-base {
+    -fx-background-color: #787878;
+    -fx-min-width: 10;
+    -fx-min-height: 120;
+    -fx-max-width: 10;
+}
+
+.peg-label {
+    -fx-text-fill: #a9b7c6;
+    -fx-font-weight: bold;
+    -fx-font-size: 14;
+    -fx-translate-y: 130;
+}
+
+/* Disk styling */
+.disk {
+    -fx-arc-height: 10;
+    -fx-arc-width: 10;
+    -fx-min-height: 15;
+    -fx-max-height: 15;
+    -fx-translate-y: -5;
+}
+
+.disk-1 {
+    -fx-background-color: #cc7832;
+    -fx-min-width: 25;
+    -fx-max-width: 25;
+}
+
+.disk-2 {
+    -fx-background-color: #6a8759;
+    -fx-min-width: 35;
+    -fx-max-width: 35;
+}
+
+.disk-3 {
+    -fx-background-color: #9876aa;
+    -fx-min-width: 45;
+    -fx-max-width: 45;
+}
+
+.disk-4 {
+    -fx-background-color: #bbb529;
+    -fx-min-width: 55;
+    -fx-max-width: 55;
+}
+
+.disk-5 {
+    -fx-background-color: #4e8bb8;
+    -fx-min-width: 65;
+    -fx-max-width: 65;
+}
+
+.disk-6 {
+    -fx-background-color: #d58b48;
+    -fx-min-width: 75;
+    -fx-max-width: 75;
+}
+
+.disk-7 {
+    -fx-background-color: #629755;
+    -fx-min-width: 85;
+    -fx-max-width: 85;
+}
+
+.disk-8 {
+    -fx-background-color: #8a6fdb;
+    -fx-min-width: 95;
+    -fx-max-width: 95;
+}
+
+.disk-9 {
+    -fx-background-color: #c93d4f;
+    -fx-min-width: 105;
+    -fx-max-width: 105;
+}
+
+.disk-10 {
+    -fx-background-color: #2d95c2;
+    -fx-min-width: 115;
+    -fx-max-width: 115;
+}
+
+/* Animation styling */
+.disk-moving {
+    -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.5), 10, 0.5, 0, 0);
+}

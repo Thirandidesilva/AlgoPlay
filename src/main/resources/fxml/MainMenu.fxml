@@ -16,9 +16,9 @@
             </padding>
             <Label text="AlgoPlay" styleClass="logo-text"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Log-Out" styleClass="logout-button"/>
-            <StackPane styleClass="profile-icon">
-                <Label text="NO IMG" styleClass="profile-text"/>
+            <Button fx:id="logoutButton" text="Log-Out" styleClass="logout-button"/>
+            <StackPane fx:id="profileIcon" styleClass="profile-icon">
+                <Label fx:id="profileText" text="NO IMG" styleClass="profile-text"/>
             </StackPane>
         </HBox>
     </top>
