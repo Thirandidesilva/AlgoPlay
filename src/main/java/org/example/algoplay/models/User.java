@@ -10,12 +10,12 @@ import org.example.algoplay.services.DatabaseService;
 public class User {
     private int userId;
     private String username;
-    private String passwaord;
+    private String password;
 
     public User(int userId, String username) {
         this.userId = userId;
         this.username = username;
-        this.passwaord = passwaord;
+        this.password = password;
     }
 
     // Getters and setters
@@ -30,8 +30,8 @@ public class User {
     public void setUsername(String username) {
         this.username = username;
     }
-    public String getPassword(){return passwaord;}
-    public  void  setPassword(String passwaord){this.passwaord = passwaord;}
+    public String getPassword(){return password;}
+    public  void  setPassword(String passwaord){this.password = password;}
 
     public static User createUser(String username) {
         DatabaseService db = DatabaseService.getInstance();

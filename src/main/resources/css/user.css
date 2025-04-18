@@ -1,0 +1,122 @@
+/* User Panel Styles */
+.user-root {
+    -fx-background-color: #1a1a2e;
+}
+
+.user-panel {
+    -fx-background-color: #16213e;
+    -fx-background-radius: 10px;
+    -fx-padding: 30px;
+    -fx-max-width: 400px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 5);
+}
+
+.panel-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4ecca3;
+    -fx-padding: 0 0 15px 0;
+}
+
+.user-field {
+    -fx-background-color: #232741;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 10px;
+    -fx-background-radius: 5px;
+    -fx-border-color: #4ecca3;
+    -fx-border-radius: 5px;
+    -fx-border-width: 1px;
+    -fx-pref-width: 300px;
+}
+
+.action-button {
+    -fx-background-color: #4ecca3;
+    -fx-text-fill: #0f3443;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+    -fx-min-width: 100px;
+}
+
+.action-button:hover {
+    -fx-background-color: #5dddb4;
+}
+
+.switch-button {
+    -fx-background-color: transparent;
+    -fx-border-color: #4ecca3;
+    -fx-text-fill: #4ecca3;
+    -fx-border-radius: 5px;
+    -fx-padding: 10px 15px;
+    -fx-cursor: hand;
+    -fx-min-width: 120px;
+}
+
+.switch-button:hover {
+    -fx-background-color: rgba(78, 204, 163, 0.2);
+}
+
+.back-button {
+    -fx-background-color: #232741;
+    -fx-text-fill: white;
+    -fx-padding: 8px 15px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.back-button:hover {
+    -fx-background-color: #2d3250;
+}
+
+.message-label {
+    -fx-text-fill: #ff5252;
+    -fx-font-size: 13px;
+    -fx-min-height: 20px;
+}
+
+/* Profile Styles */
+.profile-picture-large {
+    -fx-background-color: #4ecca3;
+    -fx-background-radius: 50%;
+    -fx-min-width: 100px;
+    -fx-min-height: 100px;
+    -fx-max-width: 100px;
+    -fx-max-height: 100px;
+    -fx-alignment: center;
+}
+
+.profile-initials {
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0f3443;
+}
+
+.profile-username {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.stats-container {
+    -fx-background-color: #232741;
+    -fx-padding: 15px;
+    -fx-background-radius: 8px;
+    -fx-min-width: 350px;
+}
+
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4ecca3;
+}
+
+.stats-grid {
+    -fx-padding: 10px;
+}
+
+.stats-grid Label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}

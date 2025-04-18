@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.algoplay.controllers.UserController"
+            styleClass="user-root"
+            prefHeight="600.0" prefWidth="900.0">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="header">
+            <padding>
+                <Insets top="15" right="20" bottom="15" left="20"/>
+            </padding>
+            <Label text="AlgoPlay" styleClass="logo-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="backButton" text="Back to Games" styleClass="back-button" onAction="#goBackToMainMenu"/>
+        </HBox>
+    </top>
+
+    <center>
+        <StackPane>
+            <!-- Login Panel -->
+            <VBox fx:id="loginPanel" alignment="CENTER" spacing="15" styleClass="user-panel">
+                <Label text="Login" styleClass="panel-title"/>
+                <TextField fx:id="loginUsername" promptText="Username" styleClass="user-field"/>
+                <PasswordField fx:id="loginPassword" promptText="Password" styleClass="user-field"/>
+                <HBox spacing="10" alignment="CENTER">
+                    <Button text="Login" onAction="#handleLogin" styleClass="action-button"/>
+                    <Button text="Register Instead" onAction="#showRegisterPanel" styleClass="switch-button"/>
+                </HBox>
+                <Label fx:id="loginMessage" styleClass="message-label"/>
+            </VBox>
+
+            <!-- Register Panel -->
+            <VBox fx:id="registerPanel" alignment="CENTER" spacing="15" styleClass="user-panel" visible="false">
+                <Label text="Register New Account" styleClass="panel-title"/>
+                <TextField fx:id="registerUsername" promptText="Username" styleClass="user-field"/>
+                <PasswordField fx:id="registerPassword" promptText="Password" styleClass="user-field"/>
+                <PasswordField fx:id="confirmPassword" promptText="Confirm Password" styleClass="user-field"/>
+                <HBox spacing="10" alignment="CENTER">
+                    <Button text="Register" onAction="#handleRegister" styleClass="action-button"/>
+                    <Button text="Login Instead" onAction="#showLoginPanel" styleClass="switch-button"/>
+                </HBox>
+                <Label fx:id="registerMessage" styleClass="message-label"/>
+            </VBox>
+
+            <!-- Profile Panel -->
+            <VBox fx:id="profilePanel" alignment="CENTER" spacing="20" styleClass="user-panel" visible="false">
+                <StackPane styleClass="profile-picture-large">
+                    <Label fx:id="profileInitials" styleClass="profile-initials"/>
+                </StackPane>
+                <Label fx:id="usernameLabel" styleClass="profile-username"/>
+
+                <VBox spacing="10" styleClass="stats-container">
+                    <Label text="Game Statistics" styleClass="section-title"/>
+                    <GridPane hgap="10" vgap="10" styleClass="stats-grid">
+                        <Label text="TicTacToe High Score:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="ticTacToeScore" text="0" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Tower of Hanoi Best Time:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="tohTime" text="Not played" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="8 Queens Puzzle Best Score:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <Label fx:id="queensScore" text="0" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Knights Tour Best Path:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <Label fx:id="knightsPath" text="0 moves" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="TSP Best Route:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <Label fx:id="tspRoute" text="0km" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </VBox>
+
+                <Button text="Log Out" onAction="#handleLogout" styleClass="logout-button"/>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>

@@ -7,13 +7,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.example.algoplay.controllers.games.TohController;
+import org.example.algoplay.models.User;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,12 +21,75 @@ public class MainMenuController {
     @FXML
     private HBox gameContainer;
 
+    @FXML
+    private Label profileText;
+
+    @FXML
+    private Button logoutButton;
+
+    @FXML
+    private StackPane profileIcon;
+
     // Game data structure to hold all game information
     private final Map<String, GameInfo> games = new HashMap<>();
+
+    // Current logged-in user
+    private User currentUser;
 
     public void initialize() {
         setupGames();
         createGameTiles();
+
+        // Set up profile icon click
+        profileIcon.setOnMouseClicked(event -> navigateToUserProfile());
+
+        // Initially hide logout button if no user is logged in
+        updateUserDisplay();
+    }
+
+    private void updateUserDisplay() {
+        if (currentUser != null) {
+            // User is logged in
+            String username = currentUser.getUsername();
+            profileText.setText(username.substring(0, 1).toUpperCase());
+            logoutButton.setVisible(true);
+        } else {
+            // No user logged in
+            profileText.setText("?");
+            logoutButton.setVisible(false);
+        }
+    }
+
+    @FXML
+    private void handleLogout() {
+        currentUser = null;
+        updateUserDisplay();
+    }
+
+    @FXML
+    private void navigateToUserProfile() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/User.fxml"));
+            Parent root = loader.load();
+
+            // Get controller and set current user (if any)
+            UserController userController = loader.getController();
+            if (currentUser != null) {
+                userController.setCurrentUser(currentUser);
+            }
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/user.css").toExternalForm());
+
+            Stage stage = (Stage) gameContainer.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("AlgoPlay - User Profile");
+
+        } catch (IOException e) {
+            System.err.println("Error loading user profile: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void setupGames() {
@@ -129,8 +191,6 @@ public class MainMenuController {
 
     private void launchGame(String gameId) {
         System.out.println("Launching game: " + gameId);
-        // Implement game launching logic here
-        // This would typically load the appropriate FXML for the selected game
         try {
             FXMLLoader loader = null;
             String fxmlPath = null;
@@ -166,9 +226,10 @@ public class MainMenuController {
             // Get controller for game-specific setup if needed
             if (gameId.equals("toh")) {
                 TohController controller = loader.getController();
-                // Any Tower of Hanoi specific setup can go here
-                // For example, if we have a current user:
-                // controller.setCurrentUser(currentUser);
+                // Pass the current user to the game controller
+                if (currentUser != null) {
+                    controller.setCurrentUser(currentUser);
+                }
             }
 
             // Get the current stage from any control in the scene
@@ -210,5 +271,11 @@ public class MainMenuController {
             this.backgroundStyle = backgroundStyle;
             this.playAction = playAction;
         }
+    }
+
+    // Method to set current user
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+        updateUserDisplay();
     }
 }
