@@ -1,13 +1,18 @@
 package org.example.algoplay.controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import org.example.algoplay.controllers.games.TohController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -126,6 +131,66 @@ public class MainMenuController {
         System.out.println("Launching game: " + gameId);
         // Implement game launching logic here
         // This would typically load the appropriate FXML for the selected game
+        try {
+            FXMLLoader loader = null;
+            String fxmlPath = null;
+
+            // Determine which game to load based on the gameId
+            switch (gameId) {
+                case "tictactoe":
+                    // This would be implemented for TicTacToe
+                    //fxmlPath = "/fxml/TicTacToe.fxml";
+                    break;
+                case "toh":
+                    fxmlPath = "/fxml/toh.fxml";
+                    break;
+                case "queens":
+                    // For other games
+                    //fxmlPath = "/fxml/QueensPuzzle.fxml";
+                    break;
+                case "knights":
+                    //fxmlPath = "/fxml/KnightsTour.fxml";
+                    break;
+                case "tsp":
+                    //fxmlPath = "/fxml/TravelingSalesman.fxml";
+                    break;
+                default:
+                    System.err.println("Unknown game ID: " + gameId);
+                    return;
+            }
+
+            // Load the game FXML
+            loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent gameRoot = loader.load();
+
+            // Get controller for game-specific setup if needed
+            if (gameId.equals("toh")) {
+                TohController controller = loader.getController();
+                // Any Tower of Hanoi specific setup can go here
+                // For example, if we have a current user:
+                // controller.setCurrentUser(currentUser);
+            }
+
+            // Get the current stage from any control in the scene
+            Stage stage = (Stage) gameContainer.getScene().getWindow();
+
+            // Create new scene with the game content
+            Scene gameScene = new Scene(gameRoot);
+            gameScene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+
+            // If the game has specific stylesheets, add them
+            if (gameId.equals("toh")) {
+                gameScene.getStylesheets().add(getClass().getResource("/css/toh.css").toExternalForm());
+            }
+
+            // Set the new scene on the stage
+            stage.setScene(gameScene);
+            stage.setTitle("AlgoPlay - " + games.get(gameId).title);
+
+        } catch (Exception e) {
+            System.err.println("Error launching game: " + gameId);
+            e.printStackTrace();
+        }
     }
 
     // Inner class to hold game information

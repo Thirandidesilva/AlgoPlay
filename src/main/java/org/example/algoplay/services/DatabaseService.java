@@ -3,113 +3,33 @@ package org.example.algoplay.services;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class DatabaseService {
+    private static final String URL = "jdbc:postgresql://localhost:5432/AlgoPlay";
+    private static final String USER = "postgres";
+    private static final String PASSWORD = "200218";
+
     private Connection connection;
-    private static final String DB_URL = "jdbc:sqlite:algoplay.db";
 
-    public void initializeDatabase() {
+    // Singleton pattern
+    private static DatabaseService instance;
+
+    private DatabaseService() {
         try {
-            // Create connection
-            connection = DriverManager.getConnection(DB_URL);
-            System.out.println("Database connection established");
-
-            // Create tables if they don't exist
-            createTables();
-
+            connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            System.out.println("Database connection established successfully");
         } catch (SQLException e) {
-            System.err.println("Database initialization error: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Database connection error: " + e.getMessage());
         }
     }
 
-    private void createTables() throws SQLException {
-        Statement statement = connection.createStatement();
-
-        // Create Players table
-        statement.execute("CREATE TABLE IF NOT EXISTS players (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "name TEXT NOT NULL)");
-
-        // Create GameResults table
-        statement.execute("CREATE TABLE IF NOT EXISTS game_results (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "player_id INTEGER," +
-                "game_type TEXT NOT NULL," +
-                "is_correct BOOLEAN," +
-                "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP," +
-                "FOREIGN KEY (player_id) REFERENCES players(id))");
-
-        // Create AlgorithmPerformance table
-        statement.execute("CREATE TABLE IF NOT EXISTS algorithm_performance (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "game_type TEXT NOT NULL," +
-                "algorithm_name TEXT NOT NULL," +
-                "execution_time_ms INTEGER," +
-                "game_round INTEGER," +
-                "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
-
-        // Game-specific tables
-        createTicTacToeTable(statement);
-        createTravelingSalesmanTable(statement);
-        createTowerOfHanoiTable(statement);
-        createEightQueensTable(statement);
-        createKnightsTourTable(statement);
-
-        statement.close();
-    }
-
-    private void createTicTacToeTable(Statement statement) throws SQLException {
-        statement.execute("CREATE TABLE IF NOT EXISTS tictactoe_results (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "player_id INTEGER," +
-                "game_result TEXT," + // win, lose, draw
-                "algorithm_used TEXT," +
-                "response TEXT," +
-                "FOREIGN KEY (player_id) REFERENCES players(id))");
-    }
-
-    private void createTravelingSalesmanTable(Statement statement) throws SQLException {
-        statement.execute("CREATE TABLE IF NOT EXISTS tsp_results (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "player_id INTEGER," +
-                "home_city TEXT," +
-                "selected_cities TEXT," +
-                "shortest_route TEXT," +
-                "algorithm_used TEXT," +
-                "FOREIGN KEY (player_id) REFERENCES players(id))");
-    }
-
-    private void createTowerOfHanoiTable(Statement statement) throws SQLException {
-        statement.execute("CREATE TABLE IF NOT EXISTS tower_of_hanoi_results (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "player_id INTEGER," +
-                "disk_count INTEGER," +
-                "moves_count INTEGER," +
-                "move_sequence TEXT," +
-                "algorithm_used TEXT," +
-                "FOREIGN KEY (player_id) REFERENCES players(id))");
-    }
-
-    private void createEightQueensTable(Statement statement) throws SQLException {
-        statement.execute("CREATE TABLE IF NOT EXISTS eight_queens_results (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "player_id INTEGER," +
-                "solution_id INTEGER," +
-                "solution TEXT," +
-                "is_recognized BOOLEAN DEFAULT false," +
-                "FOREIGN KEY (player_id) REFERENCES players(id))");
-    }
-
-    private void createKnightsTourTable(Statement statement) throws SQLException {
-        statement.execute("CREATE TABLE IF NOT EXISTS knights_tour_results (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "player_id INTEGER," +
-                "start_position TEXT," +
-                "tour_sequence TEXT," +
-                "algorithm_used TEXT," +
-                "FOREIGN KEY (player_id) REFERENCES players(id))");
+    public static DatabaseService getInstance() {
+        if (instance == null) {
+            instance = new DatabaseService();
+        }
+        return instance;
     }
 
     public Connection getConnection() {
@@ -117,13 +37,44 @@ public class DatabaseService {
     }
 
     public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
+        if (connection != null) {
+            try {
                 connection.close();
                 System.out.println("Database connection closed");
+            } catch (SQLException e) {
+                System.err.println("Error closing database connection: " + e.getMessage());
             }
-        } catch (SQLException e) {
-            System.err.println("Error closing database connection: " + e.getMessage());
         }
+    }
+
+    // Helper method to execute queries that return nothing
+    public boolean executeUpdate(String sql, Object... params) {
+        try (PreparedStatement statement = prepareStatement(sql, params)) {
+            statement.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error executing update: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Helper method to execute queries that return a result
+    public ResultSet executeQuery(String sql, Object... params) {
+        try {
+            PreparedStatement statement = prepareStatement(sql, params);
+            return statement.executeQuery();
+        } catch (SQLException e) {
+            System.err.println("Error executing query: " + e.getMessage());
+            return null;
+        }
+    }
+
+    // Helper method to prepare statements with parameters
+    private PreparedStatement prepareStatement(String sql, Object... params) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(sql);
+        for (int i = 0; i < params.length; i++) {
+            statement.setObject(i + 1, params[i]);
+        }
+        return statement;
     }
 }
