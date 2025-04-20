@@ -154,7 +154,7 @@
                         <Font name="System Bold" size="20.0" />
                     </font>
                 </Label>
-                <Button mnemonicParsing="false" styleClass="back-button" text="← Back to Games" />
+                <Button fx:id="backButton" mnemonicParsing="false" styleClass="back-button" text="← Back to Games" />
             </children>
             <padding>
                 <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
