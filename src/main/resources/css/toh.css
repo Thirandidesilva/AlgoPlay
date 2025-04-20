@@ -91,11 +91,10 @@
 
 /* Disk styling */
 .disk {
-    -fx-arc-height: 10;
-    -fx-arc-width: 10;
-    -fx-min-height: 15;
-    -fx-max-height: 15;
-    -fx-translate-y: -5;
+    -fx-arc-height: 5;
+    -fx-arc-width: 5;
+    -fx-min-height: 8;
+    -fx-max-height: 8;
 }
 
 .disk-1 {

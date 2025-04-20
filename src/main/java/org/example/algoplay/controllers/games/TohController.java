@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
@@ -84,6 +85,7 @@ public class TohController {
         SpinnerValueFactory<Integer> valueFactory =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(5, 10, randomDiskCount);
         diskCountSpinner.setValueFactory(valueFactory);
+
 
         // Initialize the game with default values
         resetGame();
@@ -289,6 +291,9 @@ public class TohController {
         StackPane pegContainer = new StackPane();
         pegContainer.getStyleClass().add("peg-container");
 
+        // Make sure alignment is set to bottom-center for proper stacking
+        pegContainer.setAlignment(Pos.BOTTOM_CENTER);
+
         // Add peg base
         VBox pegBase = new VBox();
         pegBase.getStyleClass().add("peg-base");
@@ -332,8 +337,11 @@ public class TohController {
                 StackPane disk = createDisk(diskSize);
 
                 // Position disk vertically based on its position in the stack
-                int position = diskSizes.size() - 1 - i;
-                disk.setTranslateY(-20 * position - 15); // Adjust height based on position
+                int stackPosition = diskSizes.size() - 1 - i;
+
+                // Important change: Set a fixed vertical offset for each disk in the stack
+                // The multiplier (25) determines the vertical spacing between disks
+                disk.setTranslateY(-10 * stackPosition - 10); // Increased offset for better visibility
 
                 // Add disk to peg
                 pegContainer.getChildren().add(disk);
