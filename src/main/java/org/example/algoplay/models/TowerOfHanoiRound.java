@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class TowerOfHanoiRound {
     private int hanoiId;
@@ -31,8 +32,9 @@ public class TowerOfHanoiRound {
         this.isCorrect = isCorrect;
     }
 
-    // Getters and setters
-    // ...
+    // Add this method to TowerOfHanoiGame.java
+    // Add this method to TowerOfHanoiGame.java
+
 
     // Set algorithm performance times
     public void setAlgorithmTimes(long recursiveTime, long iterativeTime, long fourPegTime) {
