@@ -37,3 +37,10 @@ CREATE TABLE algorithm_performance (
     execution_time BIGINT NOT NULL,  -- in milliseconds
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ); 
+
+insert into games (game_name) values 
+('Tic-Tac-Toe'),
+('Tower-Of-Hanoi'), 
+('Traveling Salesman Problem'),
+('Eight Queens Puzzle'),
+('knights tour Problem');
