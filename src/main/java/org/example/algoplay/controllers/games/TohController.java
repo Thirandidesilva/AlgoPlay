@@ -18,6 +18,7 @@ import org.example.algoplay.games.toh.TowerOfHanoiGame;
 import org.example.algoplay.models.TowerOfHanoiRound;
 import org.example.algoplay.models.User;
 import org.example.algoplay.services.GameStatisticsService;
+import org.example.algoplay.services.UserSessionService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,6 +122,9 @@ public class TohController {
 
         // Return to main game menu
         backButton.setOnAction(event -> returnToMainMenu());
+
+        // Get the current user from the session service
+        currentUser = UserSessionService.getInstance().getCurrentUser();
     }
 
     private void resetGame() {
@@ -193,8 +197,12 @@ public class TohController {
         }
 
         // Save statistics if user is logged in
-        if (currentUser != null) {
+        UserSessionService userSession = UserSessionService.getInstance();
+        if (userSession.isLoggedIn()) {
+            System.out.println("User is logged in. Attempting to save game round...");
             saveGameRound();
+        } else {
+            System.out.println("No user logged in. Game round will not be saved.");
         }
 
         // Update algorithm comparison chart
@@ -202,6 +210,17 @@ public class TohController {
     }
 
     private void saveGameRound() {
+        // Make sure we have a current user
+        User user = UserSessionService.getInstance().getCurrentUser();
+        if (user == null) {
+            System.err.println("Cannot save game round: No user logged in");
+            return;
+        }
+
+        int userId = user.getUserId();
+        // Fixed game ID as requested
+        int gameId = 2;
+
         int numDisks = game.getNumDisks();
         int movesCount = game.getMoveHistory().size();
         String movesSequence = String.join("\n", game.getMoveHistory());
@@ -209,7 +228,7 @@ public class TohController {
         boolean isCorrect = movesCount == optimalMoves;
 
         TowerOfHanoiRound round = new TowerOfHanoiRound(
-                currentUser.getUserId(),
+                userId,  // Use the user ID directly
                 numDisks,
                 movesCount,
                 movesSequence,
@@ -223,7 +242,12 @@ public class TohController {
                 game.getFourPegTime()
         );
 
-        round.save();
+        boolean savedSuccessfully = round.save();
+        if (savedSuccessfully) {
+            System.out.println("Game round saved successfully for user ID: " + userId);
+        } else {
+            System.err.println("Failed to save game round for user ID: " + userId);
+        }
 
         // Refresh high scores
         loadHighScores();
