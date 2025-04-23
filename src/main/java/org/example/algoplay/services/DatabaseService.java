@@ -49,11 +49,20 @@ public class DatabaseService {
 
     // Helper method to execute queries that return nothing
     public boolean executeUpdate(String sql, Object... params) {
-        try (PreparedStatement statement = prepareStatement(sql, params)) {
-            statement.executeUpdate();
-            return true;
+        try {
+            // Check if connection is valid and reconnect if needed
+            if (connection == null || connection.isClosed()) {
+                System.out.println("Reconnecting to database...");
+                connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            }
+
+            try (PreparedStatement statement = prepareStatement(sql, params)) {
+                statement.executeUpdate();
+                return true;
+            }
         } catch (SQLException e) {
             System.err.println("Error executing update: " + e.getMessage());
+            e.printStackTrace(); // Print full stack trace for better debugging
             return false;
         }
     }
@@ -61,10 +70,17 @@ public class DatabaseService {
     // Helper method to execute queries that return a result
     public ResultSet executeQuery(String sql, Object... params) {
         try {
+            // Check if connection is valid and reconnect if needed
+            if (connection == null || connection.isClosed()) {
+                System.out.println("Reconnecting to database...");
+                connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            }
+
             PreparedStatement statement = prepareStatement(sql, params);
             return statement.executeQuery();
         } catch (SQLException e) {
             System.err.println("Error executing query: " + e.getMessage());
+            e.printStackTrace(); // Print full stack trace for better debugging
             return null;
         }
     }

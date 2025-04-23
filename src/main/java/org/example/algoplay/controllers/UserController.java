@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -13,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.example.algoplay.models.User;
 import org.example.algoplay.services.DatabaseService;
+import org.example.algoplay.services.UserSessionService;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -40,6 +42,9 @@ public class UserController {
     @FXML private Label queensScore;
     @FXML private Label knightsPath;
     @FXML private Label tspRoute;
+    @FXML private Button backButton;
+
+
 
     private User currentUser;
 
@@ -108,6 +113,8 @@ public class UserController {
             if (rs != null && rs.next()) {
                 // Login successful
                 currentUser = new User(rs.getInt("user_id"), rs.getString("username"));
+                // Set user in the session service
+                UserSessionService.getInstance().setCurrentUser(currentUser);
                 showProfilePanel();
             } else {
                 loginMessage.setText("Invalid username or password");
@@ -117,6 +124,7 @@ public class UserController {
             System.err.println("Login error: " + e.getMessage());
         }
     }
+
 
     @FXML
     private void handleRegister() {
@@ -150,6 +158,8 @@ public class UserController {
             if (rs != null && rs.next()) {
                 int userId = rs.getInt("user_id");
                 currentUser = new User(userId, username);
+                // Set user in the session service
+                UserSessionService.getInstance().setCurrentUser(currentUser);
                 registerMessage.setText("Registration successful!");
 
                 // Switch to profile panel after successful registration
@@ -164,6 +174,8 @@ public class UserController {
     @FXML
     private void handleLogout() {
         currentUser = null;
+        // Clear the user session
+        UserSessionService.getInstance().logout();
         showLoginPanel();
 
         // Clear login fields
@@ -177,16 +189,13 @@ public class UserController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
             Parent root = loader.load();
 
-            // Get the controller and pass current user if logged in
+            // Get the controller but don't set the user - it will get it from the session
             MainMenuController mainMenuController = loader.getController();
-            if (currentUser != null) {
-                mainMenuController.setCurrentUser(currentUser);
-            }
 
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
 
-            Stage stage = (Stage) loginPanel.getScene().getWindow();
+            Stage stage = (Stage) backButton.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("AlgoPlay");
 

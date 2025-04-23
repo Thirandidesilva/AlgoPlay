@@ -1,6 +1,7 @@
 package org.example.algoplay.games.toh;
 
 import org.example.algoplay.utils.TimeTracker;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -139,4 +140,8 @@ public class TowerOfHanoiGame {
     public long getFourPegTime() { return fourPegTime; }
     public int getNumDisks() { return numDisks; }
     public List<String> getMoveHistory() { return moveHistory; }
+
+    public List<Stack<Integer>> getPegs() {
+        return pegs;
+    }
 }

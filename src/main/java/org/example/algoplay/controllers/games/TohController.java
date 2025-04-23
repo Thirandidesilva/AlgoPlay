@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
@@ -17,9 +18,12 @@ import org.example.algoplay.games.toh.TowerOfHanoiGame;
 import org.example.algoplay.models.TowerOfHanoiRound;
 import org.example.algoplay.models.User;
 import org.example.algoplay.services.GameStatisticsService;
+import org.example.algoplay.services.UserSessionService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class TohController {
 
@@ -76,10 +80,14 @@ public class TohController {
     private List<String> userMoves = new ArrayList<>();
 
     public void initialize() {
-        // Initialize the spinner for disk count (3-10)
+        // Initialize the spinner for disk count (5-10)
+        int randomDiskCount = (int)(Math.random() * 6) + 5; // 5 to 10
+
+        // Initialize the spinner for disk count (5-10)
         SpinnerValueFactory<Integer> valueFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(3, 10, 3);
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(5, 10, randomDiskCount);
         diskCountSpinner.setValueFactory(valueFactory);
+
 
         // Initialize the game with default values
         resetGame();
@@ -106,10 +114,18 @@ public class TohController {
         fourPegModeCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
             solveFourPegBtn.setDisable(!newVal);
             resetGame();
+            setupVisualization();
+        });
+
+        diskCountSpinner.valueProperty().addListener((obs, oldVal, newVal) -> {
+            resetGame();
         });
 
         // Return to main game menu
         backButton.setOnAction(event -> returnToMainMenu());
+
+        // Get the current user from the session service
+        currentUser = UserSessionService.getInstance().getCurrentUser();
     }
 
     private void resetGame() {
@@ -129,8 +145,8 @@ public class TohController {
         // Reset user moves
         userMoves.clear();
 
-        // Reset visualization
-        updateVisualization();
+        // Update the visualization container
+        setupVisualization();
     }
 
     private void setupEventHandlers() {
@@ -182,8 +198,12 @@ public class TohController {
         }
 
         // Save statistics if user is logged in
-        if (currentUser != null) {
+        UserSessionService userSession = UserSessionService.getInstance();
+        if (userSession.isLoggedIn()) {
+            System.out.println("User is logged in. Attempting to save game round...");
             saveGameRound();
+        } else {
+            System.out.println("No user logged in. Game round will not be saved.");
         }
 
         // Update algorithm comparison chart
@@ -191,14 +211,26 @@ public class TohController {
     }
 
     private void saveGameRound() {
+        // Make sure we have a current user
+        User user = UserSessionService.getInstance().getCurrentUser();
+        if (user == null) {
+            System.err.println("Cannot save game round: No user logged in");
+            return;
+        }
+
+        int userId = user.getUserId();
+        // Fixed game ID as requested
+        int gameId = 2;
+
         int numDisks = game.getNumDisks();
         int movesCount = game.getMoveHistory().size();
-        String movesSequence = String.join("\n", game.getMoveHistory());
+        String movesSequence = game.getMoveHistory().stream()
+                .collect(Collectors.joining("\\n"));
         int optimalMoves = game.getOptimalMovesCount();
         boolean isCorrect = movesCount == optimalMoves;
 
         TowerOfHanoiRound round = new TowerOfHanoiRound(
-                currentUser.getUserId(),
+                userId,  // Use the user ID directly
                 numDisks,
                 movesCount,
                 movesSequence,
@@ -212,7 +244,12 @@ public class TohController {
                 game.getFourPegTime()
         );
 
-        round.save();
+        boolean savedSuccessfully = round.save();
+        if (savedSuccessfully) {
+            System.out.println("Game round saved successfully for user ID: " + userId);
+        } else {
+            System.err.println("Failed to save game round for user ID: " + userId);
+        }
 
         // Refresh high scores
         loadHighScores();
@@ -280,6 +317,9 @@ public class TohController {
         StackPane pegContainer = new StackPane();
         pegContainer.getStyleClass().add("peg-container");
 
+        // Make sure alignment is set to bottom-center for proper stacking
+        pegContainer.setAlignment(Pos.BOTTOM_CENTER);
+
         // Add peg base
         VBox pegBase = new VBox();
         pegBase.getStyleClass().add("peg-base");
@@ -294,9 +334,225 @@ public class TohController {
     }
 
     private void updateVisualization() {
-        // This would update the visualization based on the current game state
-        // The actual implementation would depend on how the game tracks its state
+        // Clear all pegs of disks first
+        for (StackPane pegContainer : pegs) {
+            // Keep only the peg base and label
+            if (pegContainer.getChildren().size() > 2) {
+                pegContainer.getChildren().subList(2, pegContainer.getChildren().size()).clear();
+            }
+        }
+
+        // Add disks based on the current game state
+        for (int pegIndex = 0; pegIndex < pegs.size(); pegIndex++) {
+            StackPane pegContainer = pegs.get(pegIndex);
+            Stack<Integer> pegState = game.getPegs().get(pegIndex);
+
+            // Clone the stack to avoid modifying the game state
+            @SuppressWarnings("unchecked")
+            Stack<Integer> tempStack = (Stack<Integer>) pegState.clone();
+            List<Integer> diskSizes = new ArrayList<>();
+
+            // Pop disks from temporary stack to get them in order
+            while (!tempStack.isEmpty()) {
+                diskSizes.add(tempStack.pop());
+            }
+
+            // Add disks from bottom to top
+            for (int i = diskSizes.size() - 1; i >= 0; i--) {
+                int diskSize = diskSizes.get(i);
+                StackPane disk = createDisk(diskSize);
+
+                // Position disk vertically based on its position in the stack
+                int stackPosition = diskSizes.size() - 1 - i;
+
+                // Important change: Set a fixed vertical offset for each disk in the stack
+                // The multiplier (25) determines the vertical spacing between disks
+                disk.setTranslateY(-10 * stackPosition - 10); // Increased offset for better visibility
+
+                // Add disk to peg
+                pegContainer.getChildren().add(disk);
+            }
+        }
     }
+
+    private StackPane createDisk(int size) {
+        StackPane disk = new StackPane();
+        disk.getStyleClass().addAll("disk", "disk-" + size);
+
+        // Make disk draggable
+        setupDragAndDrop(disk, size);
+
+        return disk;
+    }
+
+        private void setupDragAndDrop(StackPane disk, int diskSize) {
+            disk.setOnMousePressed(event -> {
+                // Check if this is a valid disk to move (must be top disk)
+                boolean isValidMove = false;
+
+                // Find which peg contains this disk
+                for (int pegIndex = 0; pegIndex < pegs.size(); pegIndex++) {
+                    StackPane pegContainer = pegs.get(pegIndex);
+                    if (pegContainer.getChildren().contains(disk)) {
+                        // Check if this is the top disk
+                        Stack<Integer> pegState = game.getPegs().get(pegIndex);
+                        if (!pegState.isEmpty() && pegState.peek() == diskSize) {
+                            isValidMove = true;
+
+                            // Store source peg for later
+                            disk.getProperties().put("sourcePeg", pegIndex);
+
+                            // Add visual feedback
+                            disk.getStyleClass().add("disk-moving");
+                        }
+                        break;
+                    }
+                }
+
+                if (isValidMove) {
+                    // Store initial position for dragging
+                    disk.getProperties().put("dragStartX", event.getSceneX());
+                    disk.getProperties().put("dragStartY", event.getSceneY());
+                    disk.getProperties().put("initTranslateX", disk.getTranslateX());
+                    disk.getProperties().put("initTranslateY", disk.getTranslateY());
+
+                    // Bring to front
+                    disk.toFront();
+
+                    event.consume();
+                }
+            });
+
+            disk.setOnMouseDragged(event -> {
+                if (disk.getProperties().containsKey("dragStartX")) {
+                    double dragStartX = (double) disk.getProperties().get("dragStartX");
+                    double dragStartY = (double) disk.getProperties().get("dragStartY");
+                    double initTranslateX = (double) disk.getProperties().get("initTranslateX");
+                    double initTranslateY = (double) disk.getProperties().get("initTranslateY");
+
+                    // Calculate new position
+                    double newTranslateX = initTranslateX + event.getSceneX() - dragStartX;
+                    double newTranslateY = initTranslateY + event.getSceneY() - dragStartY;
+
+                    // Update position
+                    disk.setTranslateX(newTranslateX);
+                    disk.setTranslateY(newTranslateY);
+
+                    event.consume();
+                }
+            });
+
+            disk.setOnMouseReleased(event -> {
+                if (disk.getProperties().containsKey("dragStartX")) {
+                    // Find which peg is closest to the release point
+                    StackPane targetPeg = findClosestPeg(event.getSceneX());
+                    int sourcePegIndex = (int) disk.getProperties().get("sourcePeg");
+                    int targetPegIndex = pegs.indexOf(targetPeg);
+
+                    // Try to make the move
+                    boolean moveMade = makeUserMove(sourcePegIndex, targetPegIndex);
+
+                    // Remove visual feedback
+                    disk.getStyleClass().remove("disk-moving");
+
+                    // Clean up properties
+                    disk.getProperties().remove("dragStartX");
+                    disk.getProperties().remove("dragStartY");
+                    disk.getProperties().remove("initTranslateX");
+                    disk.getProperties().remove("initTranslateY");
+                    disk.getProperties().remove("sourcePeg");
+
+                    // Update visualization regardless of move success
+                    updateVisualization();
+
+                    event.consume();
+                }
+            });
+        }
+
+        private StackPane findClosestPeg(double sceneX) {
+            StackPane closest = pegs.get(0);
+            double minDistance = Double.MAX_VALUE;
+
+            for (StackPane peg : pegs) {
+                // Get peg center x coordinate in scene coordinates
+                double pegCenterX = peg.localToScene(peg.getBoundsInLocal()).getCenterX();
+                double distance = Math.abs(pegCenterX - sceneX);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closest = peg;
+                }
+            }
+
+            return closest;
+        }
+
+        private boolean makeUserMove(int sourcePegIndex, int targetPegIndex) {
+            if (sourcePegIndex == targetPegIndex) {
+                return false; // No move if same peg
+            }
+
+            Stack<Integer> sourcePeg = game.getPegs().get(sourcePegIndex);
+            Stack<Integer> targetPeg = game.getPegs().get(targetPegIndex);
+
+            // Check if move is valid
+            if (sourcePeg.isEmpty()) {
+                return false; // Source peg is empty
+            }
+
+            int diskSize = sourcePeg.peek();
+            if (!targetPeg.isEmpty() && targetPeg.peek() < diskSize) {
+                return false; // Can't place larger disk on smaller disk
+            }
+
+            // Make the move
+            int disk = sourcePeg.pop();
+            targetPeg.push(disk);
+
+            // Record the move
+            String move = String.format("Move Disk %d from %c to %c",
+                    disk, (char)('A' + sourcePegIndex), (char)('A' + targetPegIndex));
+            game.getMoveHistory().add(move);
+            movesTextArea.appendText(move + "\n");
+            movesCountLabel.setText(String.valueOf(game.getMoveHistory().size()));
+
+            // Check if game is solved
+            checkForWin();
+
+            return true;
+        }
+
+    private void checkForWin() {
+        // Game is won when all disks are on the last peg
+        boolean isFourPegMode = fourPegModeCheckbox.isSelected();
+        int targetPegIndex = isFourPegMode ? 3 : 2;
+        Stack<Integer> targetPeg = game.getPegs().get(targetPegIndex);
+
+        if (targetPeg.size() == game.getNumDisks()) {
+            // Game won!
+            showWinDialog();
+
+            // Save score if user is logged in
+            if (currentUser != null) {
+                saveGameRound();
+            }
+        }
+    }
+
+        private void showWinDialog() {
+            int moves = game.getMoveHistory().size();
+            int optimal = game.getOptimalMovesCount();
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Congratulations!");
+            alert.setHeaderText("Tower of Hanoi Solved!");
+            alert.setContentText(String.format("You solved the puzzle in %d moves.\nOptimal solution: %d moves.",
+                    moves, optimal));
+            alert.showAndWait();
+        }
+
+
 
     public void setCurrentUser(User user) {
         this.currentUser = user;

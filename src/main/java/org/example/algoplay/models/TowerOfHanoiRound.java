@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class TowerOfHanoiRound {
     private int hanoiId;
@@ -31,8 +32,9 @@ public class TowerOfHanoiRound {
         this.isCorrect = isCorrect;
     }
 
-    // Getters and setters
-    // ...
+    // Add this method to TowerOfHanoiGame.java
+    // Add this method to TowerOfHanoiGame.java
+
 
     // Set algorithm performance times
     public void setAlgorithmTimes(long recursiveTime, long iterativeTime, long fourPegTime) {
@@ -44,16 +46,21 @@ public class TowerOfHanoiRound {
     // Save to database
     public boolean save() {
         DatabaseService db = DatabaseService.getInstance();
+        ResultSet rs = null;
+        boolean success = false;
 
         // Insert into tower_of_hanoi_rounds table
         String sql = "INSERT INTO tower_of_hanoi_rounds (user_id, num_disks, moves_count, " +
                 "moves_sequence, optimal_moves, is_correct) " +
                 "VALUES (?, ?, ?, ?, ?, ?) RETURNING hanoi_id";
 
-        try (ResultSet rs = db.executeQuery(sql, userId, numDisks, movesCount,
-                movesSequence, optimalMoves, isCorrect)) {
+        try {
+            rs = db.executeQuery(sql, userId, numDisks, movesCount,
+                    movesSequence, optimalMoves, isCorrect);
+
             if (rs != null && rs.next()) {
                 this.hanoiId = rs.getInt("hanoi_id");
+                System.out.println("Tower of Hanoi round saved with ID: " + hanoiId);
 
                 // Save algorithm performance metrics
                 saveAlgorithmPerformance("recursive", recursiveTime);
@@ -62,24 +69,42 @@ public class TowerOfHanoiRound {
                     saveAlgorithmPerformance("four_peg", fourPegTime);
                 }
 
-                return true;
+                success = true;
+            } else {
+                System.err.println("Failed to get hanoi_id from inserted record");
             }
         } catch (SQLException e) {
             System.err.println("Error saving Tower of Hanoi round: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            // Properly close the ResultSet
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    System.err.println("Error closing ResultSet: " + e.getMessage());
+                }
+            }
         }
 
-        return false;
+        return success;
     }
 
     // Save algorithm performance
-    private void saveAlgorithmPerformance(String algorithmType, long executionTime) {
-        if (executionTime <= 0) return;
+    private boolean saveAlgorithmPerformance(String algorithmType, long executionTime) {
+        if (executionTime <= 0) return false;
 
         DatabaseService db = DatabaseService.getInstance();
         String sql = "INSERT INTO hanoi_algorithm_performance " +
                 "(hanoi_id, algorithm_type, execution_time) VALUES (?, ?, ?)";
 
-        db.executeUpdate(sql, hanoiId, algorithmType, executionTime);
+        boolean success = db.executeUpdate(sql, hanoiId, algorithmType, executionTime);
+        if (success) {
+            System.out.println("Saved " + algorithmType + " performance: " + executionTime + "ms");
+        } else {
+            System.err.println("Failed to save " + algorithmType + " performance");
+        }
+        return success;
     }
 
     // Get high scores
