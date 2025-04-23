@@ -23,6 +23,7 @@ import org.example.algoplay.services.UserSessionService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class TohController {
 
@@ -223,7 +224,8 @@ public class TohController {
 
         int numDisks = game.getNumDisks();
         int movesCount = game.getMoveHistory().size();
-        String movesSequence = String.join("\n", game.getMoveHistory());
+        String movesSequence = game.getMoveHistory().stream()
+                .collect(Collectors.joining("\\n"));
         int optimalMoves = game.getOptimalMovesCount();
         boolean isCorrect = movesCount == optimalMoves;
 

@@ -7,6 +7,7 @@ public class UserSessionService {
     private User currentUser;
 
     private UserSessionService() {
+
         // Private constructor
     }
 
