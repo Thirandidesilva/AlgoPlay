@@ -162,6 +162,7 @@ public class TohController {
     private void solveWithRecursive() {
         String moves = game.solveWithRecursiveAlgorithm();
         movesTextArea.setText(moves);
+        recursiveTimeLabel.setText(game.getRecursiveTime() + " ms");
         updateStatistics();
         updateVisualization();
     }
@@ -169,6 +170,7 @@ public class TohController {
     private void solveWithIterative() {
         String moves = game.solveWithIterativeAlgorithm();
         movesTextArea.setText(moves);
+        iterativeTimeLabel.setText(game.getRecursiveTime() + " ms");
         updateStatistics();
         updateVisualization();
     }
@@ -180,6 +182,7 @@ public class TohController {
 
         String moves = game.solveWithFourPegAlgorithm();
         movesTextArea.setText(moves);
+        fourPegTimeLabel.setText(game.getRecursiveTime() + " ms");
         updateStatistics();
         updateVisualization();
     }

@@ -127,10 +127,6 @@ public class TowerOfHanoiGame {
     }
 
     public boolean validateUserSolution(List<String> userMoves) {
-        // Implement logic to validate user's solution
-        // Check if moves are valid and solve the puzzle
-        // ...
-
         return userMoves.size() <= getOptimalMovesCount();
     }
 
