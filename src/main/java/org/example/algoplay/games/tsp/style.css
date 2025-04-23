@@ -1,0 +1,77 @@
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-background-color: #1e1e2f;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 20;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: #6C5CE7;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+    -fx-font-size: 14px;
+}
+
+.button:hover {
+    -fx-background-color: #7D6EFF;
+}
+
+/* Labels */
+.label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+/* Text fields */
+.text-field {
+    -fx-background-color: #2e2e3f;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #6C5CE7;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10;
+}
+
+.text-field:focused {
+    -fx-border-color: #A29BFE;
+    -fx-effect: dropshadow(three-pass-box, #6C5CE7, 5, 0, 0, 0);
+}
+
+/* ComboBox (if you're using dropdowns) */
+.combo-box {
+    -fx-background-color: #2e2e3f;
+    -fx-border-color: #6C5CE7;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: white;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: white;
+    -fx-background-color: #2e2e3f;
+}
+
+/* Tooltip (optional polish) */
+.tooltip {
+    -fx-background-color: #44475a;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+    -fx-background-radius: 5;
+    -fx-padding: 6;
+}
+
+/* Scrollbars (optional if needed) */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #6C5CE7;
+    -fx-background-radius: 6;
+}
