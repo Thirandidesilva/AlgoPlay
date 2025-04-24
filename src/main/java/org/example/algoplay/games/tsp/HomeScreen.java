@@ -3,7 +3,6 @@ package org.example.algoplay.games.tsp;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -24,15 +23,13 @@ import javafx.util.Duration;
 
 import java.util.Random;
 
-public class HomeScreen extends Application {
+public class HomeScreen {
 
     private static final Color PRIMARY_COLOR = Color.rgb(73, 255, 73); // Bright green
     private static final Color SECONDARY_COLOR = Color.rgb(30, 144, 255); // Dodger blue
+    private Scene scene;
 
-    @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("AlgoPlay - Traveling Salesman Problem");
-
+    public HomeScreen() {
         // Create the root layout
         StackPane root = new StackPane();
 
@@ -53,7 +50,7 @@ public class HomeScreen extends Application {
         mainContent.setTop(topBar);
 
         // Create center content
-        VBox centerContent = createCenterContent(primaryStage);
+        VBox centerContent = createCenterContent();
         mainContent.setCenter(centerContent);
 
         // Add the main content on top of the starry background
@@ -64,18 +61,17 @@ public class HomeScreen extends Application {
         mainContent.setBottom(infoPanel);
 
         // Scene setup
-        Scene scene = new Scene(root, 1200, 800);
-        primaryStage.setScene(scene);
-        primaryStage.setMinWidth(800);
-        primaryStage.setMinHeight(600);
+        scene = new Scene(root, 1200, 800);
 
         // Add fadeIn animation when the application starts
         FadeTransition fadeIn = new FadeTransition(Duration.seconds(1.5), mainContent);
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
         fadeIn.play();
+    }
 
-        primaryStage.show();
+    public Scene getScene() {
+        return scene;
     }
 
     private HBox createTopBar() {
@@ -146,7 +142,7 @@ public class HomeScreen extends Application {
         return button;
     }
 
-    private VBox createCenterContent(Stage primaryStage) {
+    private VBox createCenterContent() {
         VBox centerContent = new VBox(50);
         centerContent.setAlignment(Pos.CENTER);
         centerContent.setPadding(new Insets(50, 20, 50, 20));
@@ -175,11 +171,11 @@ public class HomeScreen extends Application {
         // Create enhanced mode selection cards
         VBox pvmCard = createModeCard("Player vs Machine",
                 "Test your skills against\ndifferent algorithms",
-                e -> launchPvMScreen(primaryStage));
+                e -> launchPvMScreen());
 
         VBox mvmCard = createModeCard("Machine vs Machine",
                 "Compare algorithm\nperformance and efficiency",
-                e -> launchMvMScreen(primaryStage));
+                e -> launchMvMScreen());
 
         buttonContainer.getChildren().addAll(pvmCard, mvmCard);
 
@@ -358,9 +354,12 @@ public class HomeScreen extends Application {
         return background;
     }
 
-    private void launchPvMScreen(Stage currentStage) {
+    private void launchPvMScreen() {
         try {
-            new PvMScreen().start(new Stage());
+            Stage currentStage = (Stage) scene.getWindow();
+            PvMScreen pvmScreen = new PvMScreen();
+            Stage newStage = new Stage();
+            pvmScreen.start(newStage);
             currentStage.close();
         } catch (Exception ex) {
             System.err.println("Failed to load Player vs Machine screen");
@@ -368,17 +367,16 @@ public class HomeScreen extends Application {
         }
     }
 
-    private void launchMvMScreen(Stage currentStage) {
+    private void launchMvMScreen() {
         try {
-            new MvMPage().start(new Stage());
+            Stage currentStage = (Stage) scene.getWindow();
+            MvMPage mvmPage = new MvMPage();
+            Stage newStage = new Stage();
+            mvmPage.start(newStage);
             currentStage.close();
         } catch (Exception ex) {
             System.err.println("Failed to load Machine vs Machine screen");
             ex.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

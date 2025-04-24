@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import org.example.algoplay.controllers.games.TohController;
+import org.example.algoplay.games.tsp.HomeScreen;
 import org.example.algoplay.models.User;
 
 import java.io.IOException;
@@ -212,8 +213,13 @@ public class MainMenuController {
                     //fxmlPath = "/fxml/KnightsTour.fxml";
                     break;
                 case "tsp":
-                    //fxmlPath = "/fxml/TravelingSalesman.fxml";
+                    HomeScreen tspGame = new HomeScreen();
+                    Scene tspScene = tspGame.getScene();
+                    Stage tspStage = (Stage) gameContainer.getScene().getWindow();
+                    tspStage.setScene(tspScene);
+                    tspStage.setTitle("AlgoPlay - Traveling Salesman");
                     break;
+
                 default:
                     System.err.println("Unknown game ID: " + gameId);
                     return;
