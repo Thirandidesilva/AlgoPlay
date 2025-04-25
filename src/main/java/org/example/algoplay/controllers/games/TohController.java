@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.example.algoplay.controllers.HanoiDataViewController;
 import org.example.algoplay.games.toh.TowerOfHanoiGame;
 import org.example.algoplay.models.TowerOfHanoiRound;
 import org.example.algoplay.models.User;
@@ -44,6 +45,9 @@ public class TohController {
 
     @FXML
     private Button solveFourPegBtn;
+
+    @FXML
+    private Button dataViewButton;
 
     @FXML
     private Button backButton;
@@ -126,6 +130,8 @@ public class TohController {
 
         // Return to main game menu
         backButton.setOnAction(event -> returnToMainMenu());
+
+        dataViewButton.setOnAction(event -> openDataView());
 
         // Get the current user from the session service
         currentUser = UserSessionService.getInstance().getCurrentUser();
@@ -631,6 +637,32 @@ public class TohController {
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
+    }
+
+    private void openDataView() {
+        try {
+            // Load the data view FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/HanoiDataView.fxml"));
+            Parent dataViewRoot = loader.load();
+
+            // Get the controller
+            HanoiDataViewController controller = loader.getController();
+
+            // Create new scene
+            Scene dataViewScene = new Scene(dataViewRoot);
+            dataViewScene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+
+            // Get the current stage
+            Stage stage = (Stage) dataViewButton.getScene().getWindow();
+
+            // Set the scene on the stage
+            stage.setScene(dataViewScene);
+            stage.setTitle("Tower of Hanoi Data View");
+
+        } catch (Exception e) {
+            System.err.println("Error opening data view");
+            e.printStackTrace();
+        }
     }
 
     private void returnToMainMenu() {
