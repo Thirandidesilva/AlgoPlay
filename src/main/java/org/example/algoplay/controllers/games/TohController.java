@@ -17,9 +17,12 @@ import javafx.stage.Stage;
 import org.example.algoplay.games.toh.TowerOfHanoiGame;
 import org.example.algoplay.models.TowerOfHanoiRound;
 import org.example.algoplay.models.User;
+import org.example.algoplay.services.DatabaseService;
 import org.example.algoplay.services.GameStatisticsService;
 import org.example.algoplay.services.UserSessionService;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -75,6 +78,7 @@ public class TohController {
     private TowerOfHanoiGame game;
     private User currentUser;
     private GameStatisticsService statsService;
+    private int currentUserRoundId = -1;  // Track the current user's game round ID
 
     private ObservableList<StackPane> pegs = FXCollections.observableArrayList();
     private List<String> userMoves = new ArrayList<>();
@@ -87,7 +91,6 @@ public class TohController {
         SpinnerValueFactory<Integer> valueFactory =
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(5, 10, randomDiskCount);
         diskCountSpinner.setValueFactory(valueFactory);
-
 
         // Initialize the game with default values
         resetGame();
@@ -145,6 +148,9 @@ public class TohController {
         // Reset user moves
         userMoves.clear();
 
+        // Reset current user round ID
+        currentUserRoundId = -1;
+
         // Update the visualization container
         setupVisualization();
     }
@@ -163,6 +169,19 @@ public class TohController {
         String moves = game.solveWithRecursiveAlgorithm();
         movesTextArea.setText(moves);
         recursiveTimeLabel.setText(game.getRecursiveTime() + " ms");
+
+        // Only save algorithm performance if a user game has been saved
+        if (UserSessionService.getInstance().isLoggedIn() && currentUserRoundId > 0) {
+            TowerOfHanoiRound.saveAlgorithmPerformance(
+                    currentUserRoundId,
+                    "recursive",
+                    game.getRecursiveTime(),
+                    // Save the actual moves sequence
+                    game.getMoveHistory().stream()
+                            .collect(Collectors.joining("\\n"))
+            );
+        }
+
         updateStatistics();
         updateVisualization();
     }
@@ -170,7 +189,19 @@ public class TohController {
     private void solveWithIterative() {
         String moves = game.solveWithIterativeAlgorithm();
         movesTextArea.setText(moves);
-        iterativeTimeLabel.setText(game.getRecursiveTime() + " ms");
+        iterativeTimeLabel.setText(game.getIterativeTime() + " ms");
+
+        // Only save algorithm performance if a user game has been saved
+        if (UserSessionService.getInstance().isLoggedIn() && currentUserRoundId > 0) {
+            TowerOfHanoiRound.saveAlgorithmPerformance(
+                    currentUserRoundId,
+                    "iterative",
+                    game.getIterativeTime(),
+                    // Save the actual moves sequence
+                    game.getMoveHistory().stream().collect(Collectors.joining("\\n"))
+            );
+        }
+
         updateStatistics();
         updateVisualization();
     }
@@ -182,7 +213,19 @@ public class TohController {
 
         String moves = game.solveWithFourPegAlgorithm();
         movesTextArea.setText(moves);
-        fourPegTimeLabel.setText(game.getRecursiveTime() + " ms");
+        fourPegTimeLabel.setText(game.getFourPegTime() + " ms");
+
+        // Only save algorithm performance if a user game has been saved
+        if (UserSessionService.getInstance().isLoggedIn() && currentUserRoundId > 0) {
+            TowerOfHanoiRound.saveAlgorithmPerformance(
+                    currentUserRoundId,
+                    "four_peg",
+                    game.getFourPegTime(),
+                    // Save the actual moves sequence
+                    game.getMoveHistory().stream().collect(Collectors.joining("\\n"))
+            );
+        }
+
         updateStatistics();
         updateVisualization();
     }
@@ -200,15 +243,6 @@ public class TohController {
             fourPegTimeLabel.setText(game.getFourPegTime() + " ms");
         }
 
-        // Save statistics if user is logged in
-        UserSessionService userSession = UserSessionService.getInstance();
-        if (userSession.isLoggedIn()) {
-            System.out.println("User is logged in. Attempting to save game round...");
-            saveGameRound();
-        } else {
-            System.out.println("No user logged in. Game round will not be saved.");
-        }
-
         // Update algorithm comparison chart
         updateAlgorithmComparisonChart();
     }
@@ -222,18 +256,19 @@ public class TohController {
         }
 
         int userId = user.getUserId();
-        // Fixed game ID as requested
-        int gameId = 2;
-
         int numDisks = game.getNumDisks();
         int movesCount = game.getMoveHistory().size();
+
+        // Get the user's move sequence
         String movesSequence = game.getMoveHistory().stream()
                 .collect(Collectors.joining("\\n"));
-        int optimalMoves = game.getOptimalMovesCount();
-        boolean isCorrect = movesCount == optimalMoves;
 
+        int optimalMoves = game.getOptimalMovesCount();
+        boolean isCorrect = movesCount <= optimalMoves; // User solution is correct if within optimal moves
+
+        // Create and save the user's round
         TowerOfHanoiRound round = new TowerOfHanoiRound(
-                userId,  // Use the user ID directly
+                userId,
                 numDisks,
                 movesCount,
                 movesSequence,
@@ -241,15 +276,30 @@ public class TohController {
                 isCorrect
         );
 
+        // Set algorithm times - these will be saved separately
         round.setAlgorithmTimes(
                 game.getRecursiveTime(),
                 game.getIterativeTime(),
                 game.getFourPegTime()
         );
 
+        // First save the user's round
         boolean savedSuccessfully = round.save();
+
         if (savedSuccessfully) {
             System.out.println("Game round saved successfully for user ID: " + userId);
+
+            // Store the current round ID for later algorithm saves
+            currentUserRoundId = round.getHanoiId();
+
+            // Now save algorithm performances linked to this round's ID
+            boolean algoSaved = round.saveAlgorithmPerformance(currentUserRoundId);
+
+            if (algoSaved) {
+                System.out.println("Algorithm performances saved successfully");
+            } else {
+                System.err.println("Failed to save algorithm performances");
+            }
         } else {
             System.err.println("Failed to save game round for user ID: " + userId);
         }
@@ -388,143 +438,143 @@ public class TohController {
         return disk;
     }
 
-        private void setupDragAndDrop(StackPane disk, int diskSize) {
-            disk.setOnMousePressed(event -> {
-                // Check if this is a valid disk to move (must be top disk)
-                boolean isValidMove = false;
+    private void setupDragAndDrop(StackPane disk, int diskSize) {
+        disk.setOnMousePressed(event -> {
+            // Check if this is a valid disk to move (must be top disk)
+            boolean isValidMove = false;
 
-                // Find which peg contains this disk
-                for (int pegIndex = 0; pegIndex < pegs.size(); pegIndex++) {
-                    StackPane pegContainer = pegs.get(pegIndex);
-                    if (pegContainer.getChildren().contains(disk)) {
-                        // Check if this is the top disk
-                        Stack<Integer> pegState = game.getPegs().get(pegIndex);
-                        if (!pegState.isEmpty() && pegState.peek() == diskSize) {
-                            isValidMove = true;
+            // Find which peg contains this disk
+            for (int pegIndex = 0; pegIndex < pegs.size(); pegIndex++) {
+                StackPane pegContainer = pegs.get(pegIndex);
+                if (pegContainer.getChildren().contains(disk)) {
+                    // Check if this is the top disk
+                    Stack<Integer> pegState = game.getPegs().get(pegIndex);
+                    if (!pegState.isEmpty() && pegState.peek() == diskSize) {
+                        isValidMove = true;
 
-                            // Store source peg for later
-                            disk.getProperties().put("sourcePeg", pegIndex);
+                        // Store source peg for later
+                        disk.getProperties().put("sourcePeg", pegIndex);
 
-                            // Add visual feedback
-                            disk.getStyleClass().add("disk-moving");
-                        }
-                        break;
+                        // Add visual feedback
+                        disk.getStyleClass().add("disk-moving");
                     }
+                    break;
                 }
+            }
 
-                if (isValidMove) {
-                    // Store initial position for dragging
-                    disk.getProperties().put("dragStartX", event.getSceneX());
-                    disk.getProperties().put("dragStartY", event.getSceneY());
-                    disk.getProperties().put("initTranslateX", disk.getTranslateX());
-                    disk.getProperties().put("initTranslateY", disk.getTranslateY());
+            if (isValidMove) {
+                // Store initial position for dragging
+                disk.getProperties().put("dragStartX", event.getSceneX());
+                disk.getProperties().put("dragStartY", event.getSceneY());
+                disk.getProperties().put("initTranslateX", disk.getTranslateX());
+                disk.getProperties().put("initTranslateY", disk.getTranslateY());
 
-                    // Bring to front
-                    disk.toFront();
+                // Bring to front
+                disk.toFront();
 
-                    event.consume();
-                }
-            });
+                event.consume();
+            }
+        });
 
-            disk.setOnMouseDragged(event -> {
-                if (disk.getProperties().containsKey("dragStartX")) {
-                    double dragStartX = (double) disk.getProperties().get("dragStartX");
-                    double dragStartY = (double) disk.getProperties().get("dragStartY");
-                    double initTranslateX = (double) disk.getProperties().get("initTranslateX");
-                    double initTranslateY = (double) disk.getProperties().get("initTranslateY");
+        disk.setOnMouseDragged(event -> {
+            if (disk.getProperties().containsKey("dragStartX")) {
+                double dragStartX = (double) disk.getProperties().get("dragStartX");
+                double dragStartY = (double) disk.getProperties().get("dragStartY");
+                double initTranslateX = (double) disk.getProperties().get("initTranslateX");
+                double initTranslateY = (double) disk.getProperties().get("initTranslateY");
 
-                    // Calculate new position
-                    double newTranslateX = initTranslateX + event.getSceneX() - dragStartX;
-                    double newTranslateY = initTranslateY + event.getSceneY() - dragStartY;
+                // Calculate new position
+                double newTranslateX = initTranslateX + event.getSceneX() - dragStartX;
+                double newTranslateY = initTranslateY + event.getSceneY() - dragStartY;
 
-                    // Update position
-                    disk.setTranslateX(newTranslateX);
-                    disk.setTranslateY(newTranslateY);
+                // Update position
+                disk.setTranslateX(newTranslateX);
+                disk.setTranslateY(newTranslateY);
 
-                    event.consume();
-                }
-            });
+                event.consume();
+            }
+        });
 
-            disk.setOnMouseReleased(event -> {
-                if (disk.getProperties().containsKey("dragStartX")) {
-                    // Find which peg is closest to the release point
-                    StackPane targetPeg = findClosestPeg(event.getSceneX());
-                    int sourcePegIndex = (int) disk.getProperties().get("sourcePeg");
-                    int targetPegIndex = pegs.indexOf(targetPeg);
+        disk.setOnMouseReleased(event -> {
+            if (disk.getProperties().containsKey("dragStartX")) {
+                // Find which peg is closest to the release point
+                StackPane targetPeg = findClosestPeg(event.getSceneX());
+                int sourcePegIndex = (int) disk.getProperties().get("sourcePeg");
+                int targetPegIndex = pegs.indexOf(targetPeg);
 
-                    // Try to make the move
-                    boolean moveMade = makeUserMove(sourcePegIndex, targetPegIndex);
+                // Try to make the move
+                boolean moveMade = makeUserMove(sourcePegIndex, targetPegIndex);
 
-                    // Remove visual feedback
-                    disk.getStyleClass().remove("disk-moving");
+                // Remove visual feedback
+                disk.getStyleClass().remove("disk-moving");
 
-                    // Clean up properties
-                    disk.getProperties().remove("dragStartX");
-                    disk.getProperties().remove("dragStartY");
-                    disk.getProperties().remove("initTranslateX");
-                    disk.getProperties().remove("initTranslateY");
-                    disk.getProperties().remove("sourcePeg");
+                // Clean up properties
+                disk.getProperties().remove("dragStartX");
+                disk.getProperties().remove("dragStartY");
+                disk.getProperties().remove("initTranslateX");
+                disk.getProperties().remove("initTranslateY");
+                disk.getProperties().remove("sourcePeg");
 
-                    // Update visualization regardless of move success
-                    updateVisualization();
+                // Update visualization regardless of move success
+                updateVisualization();
 
-                    event.consume();
-                }
-            });
+                event.consume();
+            }
+        });
+    }
+
+    private StackPane findClosestPeg(double sceneX) {
+        StackPane closest = pegs.get(0);
+        double minDistance = Double.MAX_VALUE;
+
+        for (StackPane peg : pegs) {
+            // Get peg center x coordinate in scene coordinates
+            double pegCenterX = peg.localToScene(peg.getBoundsInLocal()).getCenterX();
+            double distance = Math.abs(pegCenterX - sceneX);
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closest = peg;
+            }
         }
 
-        private StackPane findClosestPeg(double sceneX) {
-            StackPane closest = pegs.get(0);
-            double minDistance = Double.MAX_VALUE;
+        return closest;
+    }
 
-            for (StackPane peg : pegs) {
-                // Get peg center x coordinate in scene coordinates
-                double pegCenterX = peg.localToScene(peg.getBoundsInLocal()).getCenterX();
-                double distance = Math.abs(pegCenterX - sceneX);
-
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closest = peg;
-                }
-            }
-
-            return closest;
+    private boolean makeUserMove(int sourcePegIndex, int targetPegIndex) {
+        if (sourcePegIndex == targetPegIndex) {
+            return false; // No move if same peg
         }
 
-        private boolean makeUserMove(int sourcePegIndex, int targetPegIndex) {
-            if (sourcePegIndex == targetPegIndex) {
-                return false; // No move if same peg
-            }
+        Stack<Integer> sourcePeg = game.getPegs().get(sourcePegIndex);
+        Stack<Integer> targetPeg = game.getPegs().get(targetPegIndex);
 
-            Stack<Integer> sourcePeg = game.getPegs().get(sourcePegIndex);
-            Stack<Integer> targetPeg = game.getPegs().get(targetPegIndex);
-
-            // Check if move is valid
-            if (sourcePeg.isEmpty()) {
-                return false; // Source peg is empty
-            }
-
-            int diskSize = sourcePeg.peek();
-            if (!targetPeg.isEmpty() && targetPeg.peek() < diskSize) {
-                return false; // Can't place larger disk on smaller disk
-            }
-
-            // Make the move
-            int disk = sourcePeg.pop();
-            targetPeg.push(disk);
-
-            // Record the move
-            String move = String.format("Move Disk %d from %c to %c",
-                    disk, (char)('A' + sourcePegIndex), (char)('A' + targetPegIndex));
-            game.getMoveHistory().add(move);
-            movesTextArea.appendText(move + "\n");
-            movesCountLabel.setText(String.valueOf(game.getMoveHistory().size()));
-
-            // Check if game is solved
-            checkForWin();
-
-            return true;
+        // Check if move is valid
+        if (sourcePeg.isEmpty()) {
+            return false; // Source peg is empty
         }
+
+        int diskSize = sourcePeg.peek();
+        if (!targetPeg.isEmpty() && targetPeg.peek() < diskSize) {
+            return false; // Can't place larger disk on smaller disk
+        }
+
+        // Make the move
+        int disk = sourcePeg.pop();
+        targetPeg.push(disk);
+
+        // Record the move
+        String move = String.format("Move Disk %d from %c to %c",
+                disk, (char)('A' + sourcePegIndex), (char)('A' + targetPegIndex));
+        game.getMoveHistory().add(move);
+        movesTextArea.appendText(move + "\n");
+        movesCountLabel.setText(String.valueOf(game.getMoveHistory().size()));
+
+        // Check if game is solved
+        checkForWin();
+
+        return true;
+    }
 
     private void checkForWin() {
         // Game is won when all disks are on the last peg
@@ -543,19 +593,41 @@ public class TohController {
         }
     }
 
-        private void showWinDialog() {
-            int moves = game.getMoveHistory().size();
-            int optimal = game.getOptimalMovesCount();
+    private void showWinDialog() {
+        int moves = game.getMoveHistory().size();
+        int optimal = game.getOptimalMovesCount();
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Congratulations!");
-            alert.setHeaderText("Tower of Hanoi Solved!");
-            alert.setContentText(String.format("You solved the puzzle in %d moves.\nOptimal solution: %d moves.",
-                    moves, optimal));
-            alert.showAndWait();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Congratulations!");
+        alert.setHeaderText("Tower of Hanoi Solved!");
+        alert.setContentText(String.format("You solved the puzzle in %d moves.\nOptimal solution: %d moves.",
+                moves, optimal));
+        alert.showAndWait();
+    }
+
+    // Helper method to get the latest hanoi_id for the current user
+    private int getLatestUserHanoiId() {
+        if (currentUserRoundId > 0) {
+            return currentUserRoundId;
         }
 
+        DatabaseService db = DatabaseService.getInstance();
+        int userId = UserSessionService.getInstance().getCurrentUser().getUserId();
 
+        String sql = "SELECT hanoi_id FROM tower_of_hanoi_rounds " +
+                "WHERE user_id = ? ORDER BY hanoi_id DESC LIMIT 1";
+
+        try (ResultSet rs = db.executeQuery(sql, userId)) {
+            if (rs != null && rs.next()) {
+                currentUserRoundId = rs.getInt("hanoi_id");
+                return currentUserRoundId;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting latest hanoi_id: " + e.getMessage());
+        }
+
+        return -1; // Return -1 if no hanoi_id was found
+    }
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
