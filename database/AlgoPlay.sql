@@ -1,46 +1,46 @@
 CREATE TABLE users (
-    user_id SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(20)NOT NULL UNIQUE 
-);  
-
-CREATE TABLE games (
-    game_id SERIAL PRIMARY KEY,
-    game_name VARCHAR(50) NOT NULL UNIQUE
+    user_id integer NOT NULL,
+    username character varying(50) NOT NULL,
+    password character varying(20) NOT NULL
 );
 
-CREATE TABLE tower_of_hanoi_rounds (
-    hanoi_id SERIAL PRIMARY KEY,
-    round_id INTEGER REFERENCES game_rounds(round_id),
-    num_disks INTEGER NOT NULL,
-    moves_count INTEGER NOT NULL,
-    moves_sequence TEXT,
-    algorithm_recursive_time BIGINT,
-    algorithm_iterative_time BIGINT,
-    algorithm_four_peg_time BIGINT
-); 
-
-CREATE TABLE game_rounds (
-    round_id SERIAL PRIMARY KEY,
-    game_id INTEGER REFERENCES games(game_id),
-    user_id INTEGER REFERENCES users(user_id),
-    is_correct BOOLEAN DEFAULT FALSE,
-    score INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-); 
+CREATE TABLE games (
+    game_id integer NOT NULL,
+    game_name character varying(50) NOT NULL
+);
 
 CREATE TABLE algorithm_performance (
-    performance_id SERIAL PRIMARY KEY,
-    game_id INTEGER REFERENCES games(game_id),
-    round_id INTEGER REFERENCES game_rounds(round_id),
-    algorithm_name VARCHAR(100) NOT NULL,
-    execution_time BIGINT NOT NULL,  -- in milliseconds
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-); 
+    performance_id integer NOT NULL,
+    game_id integer,
+    round_id integer,
+    algorithm_name character varying(100) NOT NULL,
+    execution_time bigint NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
 
-insert into games (game_name) values 
-('Tic-Tac-Toe'),
-('Tower-Of-Hanoi'), 
-('Traveling Salesman Problem'),
-('Eight Queens Puzzle'),
-('knights tour Problem');
+CREATE TABLE game_rounds (
+    round_id integer NOT NULL,
+    game_id integer,
+    user_id integer,
+    is_correct boolean DEFAULT false,
+    score integer,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE public.tower_of_hanoi_rounds (
+    hanoi_id integer NOT NULL,
+    user_id integer,
+    num_disks integer NOT NULL,
+    moves_count integer NOT NULL,
+    moves_sequence text,
+    optimal_moves integer NOT NULL,
+    is_correct boolean NOT NULL
+);
+
+CREATE TABLE hanoi_algorithm_performance (
+    performance_id integer NOT NULL,
+    hanoi_id integer,
+    algorithm_type character varying(20) NOT NULL,
+    execution_time bigint NOT NULL,
+    move_sequence text
+);
