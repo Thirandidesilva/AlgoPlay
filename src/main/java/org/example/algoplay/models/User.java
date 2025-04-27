@@ -18,6 +18,10 @@ public class User {
         this.password = password;
     }
 
+    public User(){
+
+    }
+
     // Getters and setters
     public int getUserId() {
         return userId;

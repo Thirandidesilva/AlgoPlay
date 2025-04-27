@@ -199,7 +199,7 @@ public class MainMenuController {
             switch (gameId) {
                 case "tictactoe":
                     // This would be implemented for TicTacToe
-                    //fxmlPath = "/fxml/TicTacToe.fxml";
+                    fxmlPath = "/fxml/TicTacToe.fxml";
                     break;
                 case "toh":
                     fxmlPath = "/fxml/toh.fxml";
