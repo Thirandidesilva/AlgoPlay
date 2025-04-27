@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="mainContainer" styleClass="root" stylesheets="@/css/pvm-styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.algoplay.controllers.games.tsp.PvMPageController">
+    <center>
+        <StackPane styleClass="canvas-container">
+            <effect>
+                <DropShadow />
+            </effect>
+            <children>
+                <Canvas fx:id="canvas" />
+                <!-- Overlay for status messages -->
+                <VBox alignment="TOP_CENTER" mouseTransparent="true" spacing="10" StackPane.alignment="TOP_CENTER">
+                    <padding>
+                        <Insets top="20" />
+                    </padding>
+                    <children>
+                        <Label fx:id="statusOverlay" styleClass="status-overlay" text="">
+                            <font>
+                                <Font name="Monospace Bold" size="16.0" />
+                            </font>
+                            <effect>
+                                <DropShadow />
+                            </effect>
+                        </Label>
+                    </children>
+                </VBox>
+
+                <!-- Progress indicator that shows during algorithm runs -->
+                <ProgressBar fx:id="algorithmProgress" prefWidth="400" progress="0" visible="false" StackPane.alignment="BOTTOM_CENTER">
+                    <StackPane.margin>
+                        <Insets bottom="20" />
+                    </StackPane.margin>
+                </ProgressBar>
+            </children>
+        </StackPane>
+    </center>
+    <right>
+        <ScrollPane fitToWidth="true" styleClass="side-panel-scroll" hbarPolicy="NEVER" minWidth="340" prefWidth="340">
+            <content>
+                <VBox alignment="TOP_CENTER" prefWidth="300.0" spacing="15.0" styleClass="side-panel">
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                    </padding>
+                    <children>
+                        <Label text="TSP Challenge" styleClass="title-label">
+                            <font>
+                                <Font name="Monospace Bold" size="26.0" />
+                            </font>
+                        </Label>
+                        <Label text="Person vs Machine" styleClass="subtitle-label">
+                            <font>
+                                <Font name="Monospace" size="18.0" />
+                            </font>
+                        </Label>
+
+                        <!-- Improved instruction box -->
+                        <HBox alignment="CENTER" styleClass="instruction-box">
+                            <padding>
+                                <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
+                            </padding>
+                            <children>
+                                <Label fx:id="userInstructLabel" text="Click on canvas to add cities" styleClass="instruction-label" wrapText="true">
+                                    <font>
+                                        <Font name="Monospace" size="15.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </HBox>
+
+                        <Separator />
+
+                        <!-- Setup section -->
+                        <VBox spacing="15.0" styleClass="control-section">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <children>
+                                        <Label text="Setup" styleClass="section-header">
+                                            <font>
+                                                <Font name="Monospace Bold" size="18.0" />
+                                            </font>
+                                        </Label>
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <ToggleButton fx:id="advancedToggle" text="Advanced" styleClass="toggle-button" onAction="#toggleAdvancedOptions">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </ToggleButton>
+                                    </children>
+                                </HBox>
+
+                                <VBox spacing="8.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="10">
+                                            <children>
+                                                <Label text="Number of Cities:" styleClass="parameter-label">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                                <Label fx:id="citiesValueLabel" text="10" styleClass="value-indicator">
+                                                    <font>
+                                                        <Font name="Monospace Bold" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="citiesSlider" blockIncrement="1.0" majorTickUnit="5.0" max="30.0" min="3.0" minorTickCount="4" showTickLabels="true" showTickMarks="true" value="10.0" styleClass="custom-slider" />
+                                    </children>
+                                </VBox>
+
+                                <!-- Advanced section - hidden by default -->
+                                <VBox fx:id="advancedSection" spacing="8.0" visible="false" managed="false">
+                                    <children>
+                                        <Label text="Algorithm Parameters" styleClass="subsection-header">
+                                            <font>
+                                                <Font name="Monospace Bold" size="16.0" />
+                                            </font>
+                                        </Label>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="10">
+                                            <children>
+                                                <Label text="Iterations:" styleClass="parameter-label">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                                <Label fx:id="iterationsValueLabel" text="100" styleClass="value-indicator">
+                                                    <font>
+                                                        <Font name="Monospace Bold" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="iterationsSlider" blockIncrement="10.0" majorTickUnit="50.0" max="200.0" min="10.0" minorTickCount="4" showTickLabels="true" showTickMarks="true" value="100.0" styleClass="custom-slider" />
+
+                                        <HBox alignment="CENTER_LEFT" spacing="10">
+                                            <VBox.margin>
+                                                <Insets top="10.0" />
+                                            </VBox.margin>
+                                            <children>
+                                                <Label text="Population:" styleClass="parameter-label">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                                <Label fx:id="populationValueLabel" text="50" styleClass="value-indicator">
+                                                    <font>
+                                                        <Font name="Monospace Bold" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+                                        <Slider fx:id="populationSlider" blockIncrement="5.0" majorTickUnit="25.0" max="100.0" min="10.0" minorTickCount="4" showTickLabels="true" showTickMarks="true" value="50.0" styleClass="custom-slider" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+
+                        <Separator />
+
+                        <!-- Actions section -->
+                        <VBox spacing="12.0" styleClass="actions-section">
+                            <children>
+                                <Label text="Actions" styleClass="section-header">
+                                    <font>
+                                        <Font name="Monospace Bold" size="18.0" />
+                                    </font>
+                                </Label>
+
+                                <HBox spacing="10.0">
+                                    <children>
+                                        <Button fx:id="newCitiesBtn" mnemonicParsing="false" onAction="#handleNewCities" text="Generate Cities" styleClass="action-button">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                            <tooltip>
+                                                <Tooltip text="Generate a new set of random cities" />
+                                            </tooltip>
+                                        </Button>
+                                        <Button fx:id="resetBtn" mnemonicParsing="false" onAction="#handleReset" text="Reset All" styleClass="action-button">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                            <tooltip>
+                                                <Tooltip text="Clear everything and start over" />
+                                            </tooltip>
+                                        </Button>
+                                    </children>
+                                </HBox>
+
+                                <!-- Path creation flow buttons -->
+                                <HBox spacing="10.0">
+                                    <children>
+                                        <Button fx:id="startPathBtn" mnemonicParsing="false" onAction="#handleStartPathCreation" text="Start Path Creation" styleClass="primary-button" prefWidth="150.0">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                            <tooltip>
+                                                <Tooltip text="Begin creating your solution path" />
+                                            </tooltip>
+                                        </Button>
+                                        <Button fx:id="clearPathBtn" disable="true" mnemonicParsing="false" onAction="#handleClearPath" text="Clear Path" styleClass="action-button">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                            <tooltip>
+                                                <Tooltip text="Remove your current path" />
+                                            </tooltip>
+                                        </Button>
+                                    </children>
+                                </HBox>
+
+                                <Button fx:id="finishPathBtn" disable="true" mnemonicParsing="false" onAction="#handleFinishPath" text="Finish Path" styleClass="primary-button">
+                                    <font>
+                                        <Font name="Monospace Bold" size="14.0" />
+                                    </font>
+                                    <tooltip>
+                                        <Tooltip text="Complete your current path" />
+                                    </tooltip>
+                                </Button>
+
+                                <!-- Algorithm run button -->
+                                <Button fx:id="runAlgosBtn" mnemonicParsing="false" onAction="#handleRunAlgos" text="Run Algorithms" styleClass="highlight-button">
+                                    <font>
+                                        <Font name="Monospace Bold" size="16.0" />
+                                    </font>
+                                    <graphic>
+                                        <Region styleClass="play-icon" />
+                                    </graphic>
+                                    <tooltip>
+                                        <Tooltip text="Run all algorithms and compare results" />
+                                    </tooltip>
+                                </Button>
+                                <!-- Add this button near the other action buttons -->
+                                <Button fx:id="viewScoresBtn" text="View Detailed Scores" styleClass="action-button" disable="true" prefWidth="150">
+                                    <font>
+                                        <Font name="Monospace" size="14.0" />
+                                    </font>
+                                </Button>
+                            </children>
+                        </VBox>
+
+                        <Separator />
+
+                        <!-- Results section -->
+                        <VBox spacing="12.0" styleClass="results-section">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <children>
+                                        <Label text="Results" styleClass="section-header">
+                                            <font>
+                                                <Font name="Monospace Bold" size="18.0" />
+                                            </font>
+                                        </Label>
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Button fx:id="expandResultsBtn" mnemonicParsing="false" onAction="#handleExpandResults" text="Details" styleClass="small-button">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Button>
+                                    </children>
+                                </HBox>
+
+                                <!-- Results grid -->
+                                <GridPane hgap="15.0" vgap="10.0" styleClass="results-grid">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="60.0" percentWidth="20.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="60.0" percentWidth="25.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="100.0" percentWidth="35.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="40.0" percentWidth="20.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints minHeight="25.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="25.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="25.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="25.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="25.0" vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                    <children>
+                                        <Label text="Solver" styleClass="table-header">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label text="Time" GridPane.columnIndex="1" styleClass="table-header">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label text="Distance" GridPane.columnIndex="2" styleClass="table-header">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label text="Winner" GridPane.columnIndex="3" styleClass="table-header">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+
+                                        <!-- Solver rows -->
+                                        <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="1">
+                                            <children>
+                                                <Region styleClass="user-icon" />
+                                                <Label text="You" styleClass="solver-you-label">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="2">
+                                            <children>
+                                                <Region styleClass="ant-icon" />
+                                                <Label text="Ant" styleClass="solver-ant-label">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="3">
+                                            <children>
+                                                <Region styleClass="bee-icon" />
+                                                <Label text="Bee" styleClass="solver-bee-label">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="4">
+                                            <children>
+                                                <Region styleClass="hybrid-icon" />
+                                                <Label text="Hybrid" styleClass="solver-hybrid-label">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+
+                                        <!-- Results values -->
+                                        <Label fx:id="userTimeLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="result-value">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <StackPane GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                            <children>
+                                                <Label fx:id="antTimeLabel" text="-" styleClass="result-value">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                                <ProgressIndicator fx:id="antProgress" progress="-1.0" visible="false" />
+                                            </children>
+                                        </StackPane>
+                                        <StackPane GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                            <children>
+                                                <Label fx:id="beeTimeLabel" text="-" styleClass="result-value">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                                <ProgressIndicator fx:id="beeProgress" progress="-1.0" visible="false" />
+                                            </children>
+                                        </StackPane>
+                                        <StackPane GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                            <children>
+                                                <Label fx:id="hybridTimeLabel" text="-" styleClass="result-value">
+                                                    <font>
+                                                        <Font name="Monospace" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                                <ProgressIndicator fx:id="hybridProgress" progress="-1.0" visible="false" />
+                                            </children>
+                                        </StackPane>
+
+                                        <Label fx:id="userStatsLabel" text="-" GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="result-value">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="antStatsLabel" text="-" GridPane.columnIndex="2" GridPane.rowIndex="2" styleClass="result-value">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="beeStatsLabel" text="-" GridPane.columnIndex="2" GridPane.rowIndex="3" styleClass="result-value">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="hybridStatsLabel" text="-" GridPane.columnIndex="2" GridPane.rowIndex="4" styleClass="result-value">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+
+                                        <Label fx:id="userWinnerLabel" text="" GridPane.columnIndex="3" GridPane.rowIndex="1" styleClass="winner-label">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="antWinnerLabel" text="" GridPane.columnIndex="3" GridPane.rowIndex="2" styleClass="winner-label">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="beeWinnerLabel" text="" GridPane.columnIndex="3" GridPane.rowIndex="3" styleClass="winner-label">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="hybridWinnerLabel" text="" GridPane.columnIndex="3" GridPane.rowIndex="4" styleClass="winner-label">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </GridPane>
+
+                                <!-- Collapsible path details -->
+                                <VBox fx:id="pathDetailsBox" spacing="5.0" styleClass="paths-box" visible="false" managed="false">
+                                    <padding>
+                                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                                    </padding>
+                                    <children>
+                                        <Label text="Paths:" styleClass="paths-header">
+                                            <font>
+                                                <Font name="Monospace Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="userPathLabel" text="-" styleClass="path-you-label" wrapText="true">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="antPathLabel" text="-" styleClass="path-ant-label" wrapText="true">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="beePathLabel" text="-" styleClass="path-bee-label" wrapText="true">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="hybridPathLabel" text="-" styleClass="path-hybrid-label" wrapText="true">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+
+                                <!-- Visualization controls -->
+                                <HBox spacing="10.0" styleClass="vis-controls">
+                                    <children>
+                                        <Button fx:id="showAllPathsBtn" mnemonicParsing="false" onAction="#handleShowAllPaths" text="Show All Paths" styleClass="small-button">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Button>
+                                        <Button fx:id="showBestPathBtn" mnemonicParsing="false" onAction="#handleShowBestPath" text="Show Best" styleClass="small-button">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Button>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <!-- Footer area -->
+                        <HBox alignment="CENTER_RIGHT" spacing="10" VBox.vgrow="ALWAYS">
+                            <VBox.margin>
+                                <Insets top="15.0" />
+                            </VBox.margin>
+                            <children>
+                                <Button fx:id="helpBtn" mnemonicParsing="false" onAction="#handleHelp" text="Help" styleClass="secondary-button">
+                                    <font>
+                                        <Font name="Monospace" size="14.0" />
+                                    </font>
+                                </Button>
+                                <Button fx:id="logOutBtn" mnemonicParsing="false" onAction="#handleLogOut" text="Log Out" styleClass="logout-button">
+                                    <font>
+                                        <Font name="Monospace Bold" size="16.0" />
+                                    </font>
+                                </Button>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </right>
+</BorderPane>

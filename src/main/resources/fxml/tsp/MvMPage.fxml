@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane fx:id="root" style="-fx-background-color: #1e1e1e;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.algoplay.controllers.games.tsp.MvMPageController">
+    <center>
+        <StackPane fx:id="canvasWrapper" style="-fx-border-color: #444444; -fx-border-width: 1; -fx-padding: 0;">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10" />
+            </padding>
+            <children>
+                <Canvas fx:id="canvas" height="400" width="600" />
+            </children>
+        </StackPane>
+    </center>
+    <top>
+        <VBox>
+            <children>
+                <HBox fx:id="header" alignment="CENTER" spacing="20">
+                    <padding>
+                        <Insets bottom="15" left="15" right="15" top="15" />
+                    </padding>
+                    <children>
+                        <HBox fx:id="leftSide" alignment="CENTER_LEFT" spacing="20" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Label fx:id="titleLabel" style="-fx-text-fill: #50fa7b;" text="AlgoPlay">
+                                    <font>
+                                        <Font name="Monospace Bold" size="24" />
+                                    </font>
+                                </Label>
+                                <Label fx:id="subtitleLabel" style="-fx-text-fill: #50fa7b;" text="Traveling Salesman - Machine vs Machine">
+                                    <font>
+                                        <Font name="Monospace" size="24" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </HBox>
+                        <HBox fx:id="rightSide" alignment="CENTER_RIGHT">
+                            <children>
+                                <Button fx:id="logOutBtn" onAction="#handleLogOut" style="-fx-background-color: transparent; -fx-text-fill: #50fa7b; -fx-border-color: #50fa7b; -fx-border-radius: 5;" text="Log-Out" />
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
+                <HBox fx:id="paramControls" spacing="20">
+                    <children>
+                        <VBox spacing="5">
+                            <children>
+                                <Label fx:id="iterationsLabel" text="Iterations: 100" style="-fx-text-fill: white;" />
+                                <Slider fx:id="iterationsSlider" blockIncrement="1" majorTickUnit="50" max="500" min="50" value="100" />
+                            </children>
+                        </VBox>
+                        <VBox spacing="5">
+                            <children>
+                                <Label fx:id="populationLabel" text="Population: 30" style="-fx-text-fill: white;" />
+                                <Slider fx:id="populationSlider" blockIncrement="1" majorTickUnit="10" max="100" min="10" value="30" />
+                            </children>
+                        </VBox>
+                    </children>
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10" />
+                    </padding>
+                </HBox>
+            </children>
+        </VBox>
+    </top>
+    <bottom>
+        <VBox fx:id="resultsArea">
+            <children>
+                <HBox fx:id="sliderBox" alignment="CENTER" spacing="10">
+                    <padding>
+                        <Insets bottom="5" left="15" right="15" top="5" />
+                    </padding>
+                    <children>
+                        <Label style="-fx-text-fill: white;" text="Cities:" />
+                        <Slider fx:id="citiesSlider" blockIncrement="1" majorTickUnit="5" max="20" min="5" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10" />
+                        <Button fx:id="newCitiesBtn" onAction="#handleNewCities" style="-fx-background-color: #bd93f9; -fx-text-fill: white;" text="Random Cities" />
+                    </children>
+                </HBox>
+                <HBox fx:id="controlButtons" alignment="CENTER" spacing="20">
+                    <padding>
+                        <Insets bottom="15" left="15" right="15" top="15" />
+                    </padding>
+                    <children>
+                        <Button fx:id="runRaceBtn" onAction="#handleRunRace" style="-fx-background-color: #50fa7b; -fx-text-fill: #282a36; -fx-font-weight: bold;" text="Start Race" />
+                        <Button fx:id="resetBtn" onAction="#handleReset" style="-fx-background-color: #ff5555; -fx-text-fill: white; -fx-font-weight: bold;" text="Reset" />
+                    </children>
+                </HBox>
+                <GridPane fx:id="resultsGrid" hgap="20" style="-fx-background-color: #1e1e1e;" vgap="10">
+                    <padding>
+                        <Insets bottom="20" left="20" right="20" top="20" />
+                    </padding>
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="15" />
+                        <ColumnConstraints percentWidth="28.33" />
+                        <ColumnConstraints percentWidth="28.33" />
+                        <ColumnConstraints percentWidth="28.33" />
+                    </columnConstraints>
+                    <children>
+                        <!-- Headers -->
+                        <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="" />
+                        <Label fx:id="antHeader" GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-text-fill: white;" text="Ant">
+                            <font>
+                                <Font name="Monospace Bold" size="18" />
+                            </font>
+                        </Label>
+                        <Label fx:id="beeHeader" GridPane.columnIndex="2" GridPane.rowIndex="0" style="-fx-text-fill: white;" text="Bee">
+                            <font>
+                                <Font name="Monospace Bold" size="18" />
+                            </font>
+                        </Label>
+                        <Label fx:id="hybridHeader" GridPane.columnIndex="3" GridPane.rowIndex="0" style="-fx-text-fill: white;" text="Hybrid">
+                            <font>
+                                <Font name="Monospace Bold" size="18" />
+                            </font>
+                        </Label>
+
+                        <!-- Time Row -->
+                        <Label fx:id="timeHeader" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-text-fill: #bbbbbb;" text="Time Taken">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="antTimeLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" style="-fx-text-fill: white;" text="-">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="beeTimeLabel" GridPane.columnIndex="2" GridPane.rowIndex="1" style="-fx-text-fill: white;" text="-">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="hybridTimeLabel" GridPane.columnIndex="3" GridPane.rowIndex="1" style="-fx-text-fill: white;" text="-">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+
+                        <!-- Path Row -->
+                        <Label fx:id="pathHeader" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-text-fill: #bbbbbb;" text="Best Path">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="antPathLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" style="-fx-text-fill: white;" text="-">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="beePathLabel" GridPane.columnIndex="2" GridPane.rowIndex="2" style="-fx-text-fill: white;" text="-">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="hybridPathLabel" GridPane.columnIndex="3" GridPane.rowIndex="2" style="-fx-text-fill: white;" text="-">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+
+                        <!-- Stats Row -->
+                        <Label fx:id="statHeader" GridPane.columnIndex="0" GridPane.rowIndex="3" style="-fx-text-fill: #bbbbbb;" text="Path Details">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="antStatsLabel" GridPane.columnIndex="1" GridPane.rowIndex="3" style="-fx-text-fill: white;" text="-">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="beeStatsLabel" GridPane.columnIndex="2" GridPane.rowIndex="3" style="-fx-text-fill: white;" text="-">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="hybridStatsLabel" GridPane.columnIndex="3" GridPane.rowIndex="3" style="-fx-text-fill: white;" text="-">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+
+                        <!-- Winner Row -->
+                        <Label fx:id="winnerHeader" GridPane.columnIndex="0" GridPane.rowIndex="4" style="-fx-text-fill: #bbbbbb;" text="Winner">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="antWinnerLabel" GridPane.columnIndex="1" GridPane.rowIndex="4" style="-fx-text-fill: white;" text="">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="beeWinnerLabel" GridPane.columnIndex="2" GridPane.rowIndex="4" style="-fx-text-fill: white;" text="">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                        <Label fx:id="hybridWinnerLabel" GridPane.columnIndex="3" GridPane.rowIndex="4" style="-fx-text-fill: white;" text="">
+                            <font>
+                                <Font name="Monospace" size="14" />
+                            </font>
+                        </Label>
+                    </children>
+                </GridPane>
+            </children>
+        </VBox>
+    </bottom>
+</BorderPane>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane fx:id="mainContainer" prefHeight="600.0" prefWidth="800.0" styleClass="main-container" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.algoplay.controllers.games.tsp.ScoresPageController">
+    <top>
+        <VBox spacing="10" styleClass="header">
+            <padding>
+                <Insets top="15" right="15" bottom="15" left="15" />
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <Label text="TSP Challenge Results" styleClass="page-title" />
+                <Label fx:id="sessionStatsLabel" text="Session Stats" styleClass="stats-label" />
+                <Label fx:id="winnerLabel" text="Winner: " styleClass="winner-header" HBox.hgrow="ALWAYS" />
+                <Button fx:id="backButton" text="Back to Game" styleClass="back-button" />
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" fitToHeight="true">
+            <VBox spacing="15">
+                <padding>
+                    <Insets top="15" right="15" bottom="15" left="15" />
+                </padding>
+
+                <!-- Solution Visualizations -->
+                <VBox styleClass="section">
+                    <Label text="Solution Paths" styleClass="section-header" />
+                    <Canvas fx:id="solutionsCanvas" height="250.0" width="700.0" />
+                </VBox>
+
+                <!-- Score Comparison Chart -->
+                <VBox styleClass="section">
+                    <Label text="Score Comparison" styleClass="section-header" />
+                    <BarChart fx:id="scoreComparisonChart" legendSide="RIGHT">
+                        <xAxis>
+                            <CategoryAxis fx:id="xAxis" label="Solver" />
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis fx:id="yAxis" label="Score" />
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+
+                <!-- Detailed Scores Table -->
+                <VBox styleClass="section">
+                    <Label text="Detailed Scores" styleClass="section-header" />
+                    <TableView fx:id="scoresTable" prefHeight="200.0">
+                        <columns>
+                            <TableColumn fx:id="solverColumn" prefWidth="100.0" text="Solver" />
+                            <TableColumn fx:id="totalScoreColumn" prefWidth="80.0" text="Total Score" />
+                            <TableColumn fx:id="pathScoreColumn" prefWidth="80.0" text="Path Score" />
+                            <TableColumn fx:id="timeScoreColumn" prefWidth="80.0" text="Time Score" />
+                            <TableColumn fx:id="qualityScoreColumn" prefWidth="80.0" text="Quality Score" />
+                            <TableColumn fx:id="pathLengthColumn" prefWidth="80.0" text="Path Length" />
+                            <TableColumn fx:id="computationTimeColumn" prefWidth="80.0" text="Time (ms)" />
+                        </columns>
+                    </TableView>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

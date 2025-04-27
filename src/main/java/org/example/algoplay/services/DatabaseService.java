@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 public class DatabaseService {
     private static final String URL = "jdbc:postgresql://localhost:5432/AlgoPlay";
     private static final String USER = "postgres";
-    private static final String PASSWORD = "200218";
+    private static final String PASSWORD = "G0tb1tf3v3rh1t";
 
     private Connection connection;
 
