@@ -650,7 +650,7 @@ public class TohController {
 
             // Create new scene
             Scene dataViewScene = new Scene(dataViewRoot);
-            dataViewScene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+            dataViewScene.getStylesheets().add(getClass().getResource("/css/Style.css").toExternalForm());
 
             // Get the current stage
             Stage stage = (Stage) dataViewButton.getScene().getWindow();
@@ -676,7 +676,7 @@ public class TohController {
 
             // Create new scene with main menu content
             Scene mainMenuScene = new Scene(mainMenuRoot);
-            mainMenuScene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+            mainMenuScene.getStylesheets().add(getClass().getResource("/css/Style.css").toExternalForm());
 
             // Set the scene on the stage
             stage.setScene(mainMenuScene);

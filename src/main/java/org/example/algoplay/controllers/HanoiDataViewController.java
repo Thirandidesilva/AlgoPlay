@@ -129,12 +129,12 @@ public class HanoiDataViewController implements Initializable {
     private void backToGame() {
         try {
             // Load the Tower of Hanoi FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/toh.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Toh.fxml"));
             Parent tohRoot = loader.load();
 
             // Create new scene
             Scene tohScene = new Scene(tohRoot);
-            tohScene.getStylesheets().add(getClass().getResource("/css/toh.css").toExternalForm());
+            tohScene.getStylesheets().add(getClass().getResource("/css/Toh.css").toExternalForm());
 
             // Get the current stage
             Stage stage = (Stage) dataTable.getScene().getWindow();

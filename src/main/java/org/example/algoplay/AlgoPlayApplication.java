@@ -14,7 +14,7 @@ public class AlgoPlayApplication extends Application {
         Parent root = loader.load();
 
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/css/Style.css").toExternalForm());
 
         primaryStage.setTitle("AlgoPlay");
         primaryStage.setScene(scene);

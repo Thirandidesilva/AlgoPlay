@@ -79,8 +79,8 @@ public class MainMenuController {
             }
 
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-            scene.getStylesheets().add(getClass().getResource("/css/user.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/Style.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/User.css").toExternalForm());
 
             Stage stage = (Stage) gameContainer.getScene().getWindow();
             stage.setScene(scene);
@@ -202,7 +202,7 @@ public class MainMenuController {
                     //fxmlPath = "/fxml/TicTacToe.fxml";
                     break;
                 case "toh":
-                    fxmlPath = "/fxml/toh.fxml";
+                    fxmlPath = "/fxml/Toh.fxml";
                     break;
                 case "queens":
                     // For other games
@@ -237,11 +237,11 @@ public class MainMenuController {
 
             // Create new scene with the game content
             Scene gameScene = new Scene(gameRoot);
-            gameScene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+            gameScene.getStylesheets().add(getClass().getResource("/css/Style.css").toExternalForm());
 
             // If the game has specific stylesheets, add them
             if (gameId.equals("toh")) {
-                gameScene.getStylesheets().add(getClass().getResource("/css/toh.css").toExternalForm());
+                gameScene.getStylesheets().add(getClass().getResource("/css/Toh.css").toExternalForm());
             }
 
             // Set the new scene on the stage
