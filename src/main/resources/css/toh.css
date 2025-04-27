@@ -161,3 +161,13 @@
 .disk-moving {
     -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.5), 10, 0.5, 0, 0);
 }
+
+.data-button {
+    -fx-background-color: #3c78b5;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.data-button:hover {
+    -fx-background-color: #4b88c5;
+}

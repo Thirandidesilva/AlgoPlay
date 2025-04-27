@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 public class TowerOfHanoiRound {
     private int hanoiId;
@@ -15,13 +14,14 @@ public class TowerOfHanoiRound {
     private String movesSequence;
     private int optimalMoves;
     private boolean isCorrect;
+    private boolean isUserSolution; // Flag to identify user solutions vs algorithm solutions
 
     // Algorithm performance
     private long recursiveTime;
     private long iterativeTime;
     private long fourPegTime;
 
-    // Constructor
+    // Constructor for user solutions
     public TowerOfHanoiRound(int userId, int numDisks, int movesCount,
                              String movesSequence, int optimalMoves, boolean isCorrect) {
         this.userId = userId;
@@ -30,11 +30,8 @@ public class TowerOfHanoiRound {
         this.movesSequence = movesSequence;
         this.optimalMoves = optimalMoves;
         this.isCorrect = isCorrect;
+        this.isUserSolution = true; // Default constructor is for user solutions
     }
-
-    // Add this method to TowerOfHanoiGame.java
-    // Add this method to TowerOfHanoiGame.java
-
 
     // Set algorithm performance times
     public void setAlgorithmTimes(long recursiveTime, long iterativeTime, long fourPegTime) {
@@ -43,8 +40,18 @@ public class TowerOfHanoiRound {
         this.fourPegTime = fourPegTime;
     }
 
-    // Save to database
+    // Getter for hanoiId
+    public int getHanoiId() {
+        return hanoiId;
+    }
+
+    // Save to database - only save user moves to tower_of_hanoi_rounds
     public boolean save() {
+        if (!isUserSolution) {
+            System.err.println("This method should only be used for user solutions");
+            return false;
+        }
+
         DatabaseService db = DatabaseService.getInstance();
         ResultSet rs = null;
         boolean success = false;
@@ -61,14 +68,6 @@ public class TowerOfHanoiRound {
             if (rs != null && rs.next()) {
                 this.hanoiId = rs.getInt("hanoi_id");
                 System.out.println("Tower of Hanoi round saved with ID: " + hanoiId);
-
-                // Save algorithm performance metrics
-                saveAlgorithmPerformance("recursive", recursiveTime);
-                saveAlgorithmPerformance("iterative", iterativeTime);
-                if (fourPegTime > 0) {
-                    saveAlgorithmPerformance("four_peg", fourPegTime);
-                }
-
                 success = true;
             } else {
                 System.err.println("Failed to get hanoi_id from inserted record");
@@ -77,7 +76,6 @@ public class TowerOfHanoiRound {
             System.err.println("Error saving Tower of Hanoi round: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            // Properly close the ResultSet
             if (rs != null) {
                 try {
                     rs.close();
@@ -90,15 +88,29 @@ public class TowerOfHanoiRound {
         return success;
     }
 
-    // Save algorithm performance
-    private boolean saveAlgorithmPerformance(String algorithmType, long executionTime) {
+    // Save algorithm performance separately - link to user's hanoi_id
+    public boolean saveAlgorithmPerformance(int userHanoiId) {
+        boolean recursiveSuccess = saveAlgorithmPerformance(userHanoiId, "recursive", recursiveTime, null);
+        boolean iterativeSuccess = saveAlgorithmPerformance(userHanoiId, "iterative", iterativeTime, null);
+        boolean fourPegSuccess = true;
+
+        if (fourPegTime > 0) {
+            fourPegSuccess = saveAlgorithmPerformance(userHanoiId, "four_peg", fourPegTime, null);
+        }
+
+        return recursiveSuccess && iterativeSuccess && fourPegSuccess;
+    }
+
+    // Method to save individual algorithm performance with specific move sequence
+    public static boolean saveAlgorithmPerformance(int hanoiId, String algorithmType,
+                                                   long executionTime, String moveSequence) {
         if (executionTime <= 0) return false;
 
         DatabaseService db = DatabaseService.getInstance();
         String sql = "INSERT INTO hanoi_algorithm_performance " +
-                "(hanoi_id, algorithm_type, execution_time) VALUES (?, ?, ?)";
+                "(hanoi_id, algorithm_type, execution_time, move_sequence) VALUES (?, ?, ?, ?)";
 
-        boolean success = db.executeUpdate(sql, hanoiId, algorithmType, executionTime);
+        boolean success = db.executeUpdate(sql, hanoiId, algorithmType, executionTime, moveSequence);
         if (success) {
             System.out.println("Saved " + algorithmType + " performance: " + executionTime + "ms");
         } else {
@@ -121,7 +133,6 @@ public class TowerOfHanoiRound {
             if (rs != null) {
                 while (rs.next()) {
                     // Create TowerOfHanoiRound from ResultSet
-                    // (simplified for brevity)
                     TowerOfHanoiRound round = new TowerOfHanoiRound(
                             rs.getInt("user_id"),
                             rs.getInt("num_disks"),

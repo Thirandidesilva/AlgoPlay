@@ -155,6 +155,7 @@
                     </font>
                 </Label>
                 <Button fx:id="backButton" mnemonicParsing="false" styleClass="back-button" text="← Back to Games" />
+                <Button fx:id="dataViewButton" mnemonicParsing="false" styleClass="data-button" text="Data View" />
             </children>
             <padding>
                 <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
