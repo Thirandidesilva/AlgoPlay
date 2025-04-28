@@ -1,0 +1,168 @@
+/* Knight's Tour Application Styles */
+.root {
+    -fx-background-color: #f0f0f0;
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Title styling */
+.title-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 10 0 10 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 4, 0, 0, 2);
+}
+
+/* Top control bar */
+.top-controls {
+    -fx-background-color: linear-gradient(to bottom, #3a5169, #2c3e50);
+    -fx-padding: 15px;
+    -fx-spacing: 15px;
+}
+
+.top-controls Label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.top-controls TextField {
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-border-color: #bdc3c7;
+    -fx-padding: 5px;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.button:pressed {
+    -fx-background-color: #1c6ea4;
+}
+
+/* Chess board styling */
+.chess-board {
+    -fx-background-color: #d6d6d6;
+    -fx-padding: 10px;
+    -fx-border-color: #2c3e50;
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);
+}
+
+/* Chess board cells */
+.white-square {
+    -fx-fill: #f0d9b5;
+    -fx-stroke: #8b8b8b;
+    -fx-stroke-width: 0.5;
+}
+
+.black-square {
+    -fx-fill: #b58863;
+    -fx-stroke: #8b8b8b;
+    -fx-stroke-width: 0.5;
+}
+
+/* Right panel */
+.stats-panel {
+    -fx-background-color: #ecf0f1;
+    -fx-border-color: #bdc3c7;
+    -fx-border-width: 0 0 0 1;
+    -fx-padding: 15px;
+    -fx-spacing: 15px;
+}
+
+.stats-heading {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-border-color: #bdc3c7;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 0 5 0;
+}
+
+.stats-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #34495e;
+}
+
+/* Status bar */
+.status-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 5px;
+    -fx-background-color: #ecf0f1;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-border-color: #bdc3c7;
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
+}
+
+/* ComboBox styling */
+.combo-box {
+    -fx-background-color: white;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 4px;
+    -fx-padding: 0;
+}
+
+.combo-box .list-cell {
+    -fx-padding: 5px;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: #3498db;
+}
+
+.combo-box .arrow {
+    -fx-background-color: white;
+}
+
+/* Special button styling */
+#showHintButton {
+    -fx-background-color: #f39c12;
+}
+
+#showHintButton:hover {
+    -fx-background-color: #e67e22;
+}
+
+#resetGameButton {
+    -fx-background-color: #e74c3c;
+}
+
+#resetGameButton:hover {
+    -fx-background-color: #c0392b;
+}
+
+/* Visited square coloring will be handled dynamically in code */
+.visited-square {
+    -fx-opacity: 0.9;
+}
+
+.knight-position {
+    -fx-font-size: 28px;
+    -fx-text-fill: black;
+}
+
+.hint-square {
+    -fx-fill: #f1c40f;
+    -fx-opacity: 0.7;
+}
+
+.hint-text {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-fill: #c0392b;
+}

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" stylesheets="@/css/kt.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.algoplay.controllers.games.KTController">
+    <top>
+        <VBox BorderPane.alignment="CENTER">
+            <children>
+                <Label text="Knight's Tour Problem" styleClass="title-label" alignment="CENTER" maxWidth="Infinity" />
+                <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="top-controls">
+                    <children>
+                        <Label text="Player Name:" />
+                        <TextField fx:id="playerNameField" prefWidth="150.0" />
+                        <Button mnemonicParsing="false" onAction="#startGame" text="Start Game" />
+                        <ComboBox fx:id="algorithmComboBox" prefWidth="150.0" promptText="Select Algorithm" />
+                        <!-- <Button mnemonicParsing="false" onAction="#autoSolve" text="Auto Solve" /> -->
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                    </padding>
+                </HBox>
+            </children>
+        </VBox>
+    </top>
+    <right>
+        <VBox alignment="TOP_CENTER" spacing="10.0" styleClass="stats-panel" BorderPane.alignment="CENTER">
+            <children>
+                <Label text="Statistics" styleClass="stats-heading" />
+                <Label fx:id="startPositionLabel" text="" styleClass="stats-label" />
+                <Label fx:id="movesCountLabel" text="" styleClass="stats-label" />
+                <Label fx:id="timeLabel" text="" styleClass="stats-label" />
+                <Button fx:id="showHintButton" mnemonicParsing="false" onAction="#showHint" prefWidth="150.0" text="Show Hint" />
+                <Button fx:id="resetGameButton" mnemonicParsing="false" onAction="#resetGame" prefWidth="150.0" text="Reset Game" />
+                <Button fx:id="undoButton" text="Undo Move" onAction="#undoMove" disable="true"/>
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+        </VBox>
+    </right>
+    <center>
+        <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+            <children>
+                <Label fx:id="statusLabel" text="Enter your name and click Start Game" styleClass="status-label" />
+                <GridPane fx:id="chessBoard" alignment="CENTER" gridLinesVisible="true" minHeight="400.0" minWidth="400.0" prefHeight="400.0" prefWidth="400.0" styleClass="chess-board">
+                    <!-- The grid contents will be generated in the controller -->
+                </GridPane>
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+        </VBox>
+    </center>
+</BorderPane>
