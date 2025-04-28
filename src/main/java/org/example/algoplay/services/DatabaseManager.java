@@ -12,12 +12,15 @@ import java.util.Map;
 public class DatabaseManager {
     // Reference to the central database service
     private final DatabaseService dbService;
+    // Reference to the user session service
+    private final UserSessionService userSessionService;
 
     // SQL statements for table creation and data manipulation
     private static final String CREATE_TABLE_SQL =
             "CREATE TABLE IF NOT EXISTS knight_tour_solutions (" +
                     "id SERIAL PRIMARY KEY, " +
-                    "player_name VARCHAR(100) NOT NULL, " +
+                    "game_id INTEGER DEFAULT 5 REFERENCES games(game_id) ON DELETE CASCADE, " +
+                    "user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE, " +
                     "algorithm VARCHAR(50) NOT NULL, " +
                     "start_position VARCHAR(10) NOT NULL, " +
                     "solution_path TEXT NOT NULL, " +
@@ -32,6 +35,9 @@ public class DatabaseManager {
         // Get the singleton instance of the central database service
         this.dbService = DatabaseService.getInstance();
 
+        // Get the singleton instance of the user session service
+        this.userSessionService = UserSessionService.getInstance();
+
         try {
             // Create the table if it doesn't exist
             dbService.executeUpdate(CREATE_TABLE_SQL);
@@ -45,12 +51,21 @@ public class DatabaseManager {
     /**
      * Saves a knight tour solution to the database
      */
-    public void saveSolution(String playerName, String algorithm, String startPosition,
+    public void saveSolution(String algorithm, String startPosition,
                              String solutionPath, long executionTime) {
-        String sql = "INSERT INTO knight_tour_solutions (player_name, algorithm, start_position, solution_path, execution_time) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        // Get current user ID from session
+        int userId = userSessionService.getCurrentUserId();
 
-        boolean success = dbService.executeUpdate(sql, playerName, algorithm, startPosition, solutionPath, executionTime);
+        // Check if user is logged in
+        if (userId == -1) {
+            System.err.println("Cannot save solution: No user logged in");
+            return;
+        }
+
+        String sql = "INSERT INTO knight_tour_solutions (game_id, user_id, algorithm, start_position, solution_path, execution_time) " +
+                "VALUES (5, ?, ?, ?, ?, ?)";
+
+        boolean success = dbService.executeUpdate(sql, userId, algorithm, startPosition, solutionPath, executionTime);
 
         if (success) {
             System.out.println("Solution saved successfully");
@@ -64,14 +79,18 @@ public class DatabaseManager {
      */
     public List<SolutionRecord> getAllSolutions() {
         List<SolutionRecord> solutions = new ArrayList<>();
-        String sql = "SELECT * FROM knight_tour_solutions ORDER BY created_at DESC";
+        String sql = "SELECT ks.*, u.username FROM knight_tour_solutions ks " +
+                "JOIN users u ON ks.user_id = u.user_id " +
+                "ORDER BY ks.created_at DESC";
 
         try (ResultSet rs = dbService.executeQuery(sql)) {
             if (rs != null) {
                 while (rs.next()) {
                     SolutionRecord record = new SolutionRecord(
                             rs.getInt("id"),
-                            rs.getString("player_name"),
+                            rs.getInt("game_id"),
+                            rs.getInt("user_id"),
+                            rs.getString("username"),
                             rs.getString("algorithm"),
                             rs.getString("start_position"),
                             rs.getString("solution_path"),
@@ -132,18 +151,32 @@ public class DatabaseManager {
     }
 
     /**
-     * Retrieves solutions for a specific player
+     * Retrieves solutions for a specific user
      */
-    public List<SolutionRecord> getSolutionsByPlayer(String playerName) {
+    public List<SolutionRecord> getSolutionsForCurrentUser() {
         List<SolutionRecord> solutions = new ArrayList<>();
-        String sql = "SELECT * FROM knight_tour_solutions WHERE player_name = ? ORDER BY created_at DESC";
 
-        try (ResultSet rs = dbService.executeQuery(sql, playerName)) {
+        // Get current user ID from session
+        int userId = userSessionService.getCurrentUserId();
+
+        // Check if user is logged in
+        if (userId == -1) {
+            System.err.println("Cannot retrieve solutions: No user logged in");
+            return solutions;
+        }
+
+        String sql = "SELECT ks.*, u.username FROM knight_tour_solutions ks " +
+                "JOIN users u ON ks.user_id = u.user_id " +
+                "WHERE ks.user_id = ? ORDER BY ks.created_at DESC";
+
+        try (ResultSet rs = dbService.executeQuery(sql, userId)) {
             if (rs != null) {
                 while (rs.next()) {
                     SolutionRecord record = new SolutionRecord(
                             rs.getInt("id"),
-                            rs.getString("player_name"),
+                            rs.getInt("game_id"),
+                            rs.getInt("user_id"),
+                            rs.getString("username"),
                             rs.getString("algorithm"),
                             rs.getString("start_position"),
                             rs.getString("solution_path"),
@@ -154,7 +187,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error retrieving player solutions: " + e.getMessage());
+            System.err.println("Error retrieving user solutions: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -191,17 +224,21 @@ public class DatabaseManager {
      */
     public static class SolutionRecord {
         private final int id;
-        private final String playerName;
+        private final int gameId;
+        private final int userId;
+        private final String username;
         private final String algorithm;
         private final String startPosition;
         private final String solutionPath;
         private final long executionTime;
         private final Timestamp createdAt;
 
-        public SolutionRecord(int id, String playerName, String algorithm, String startPosition,
-                              String solutionPath, long executionTime, Timestamp createdAt) {
+        public SolutionRecord(int id, int gameId, int userId, String username, String algorithm,
+                              String startPosition, String solutionPath, long executionTime, Timestamp createdAt) {
             this.id = id;
-            this.playerName = playerName;
+            this.gameId = gameId;
+            this.userId = userId;
+            this.username = username;
             this.algorithm = algorithm;
             this.startPosition = startPosition;
             this.solutionPath = solutionPath;
@@ -211,7 +248,9 @@ public class DatabaseManager {
 
         // Getters
         public int getId() { return id; }
-        public String getPlayerName() { return playerName; }
+        public int getGameId() { return gameId; }
+        public int getUserId() { return userId; }
+        public String getUsername() { return username; }
         public String getAlgorithm() { return algorithm; }
         public String getStartPosition() { return startPosition; }
         public String getSolutionPath() { return solutionPath; }
@@ -220,7 +259,7 @@ public class DatabaseManager {
 
         @Override
         public String toString() {
-            return "Solution by " + playerName + " using " + algorithm +
+            return "Solution by " + username + " using " + algorithm +
                     " (Start: " + startPosition + ", Time: " + executionTime + "ms)";
         }
     }

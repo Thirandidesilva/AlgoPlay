@@ -10,6 +10,7 @@ import javafx.scene.text.Text;
 import org.example.algoplay.models.BacktrackingKnightTour;
 import org.example.algoplay.models.WarnsdorffKnightTour;
 import org.example.algoplay.services.DatabaseManager;
+import org.example.algoplay.services.UserSessionService;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.Random;
 
 public class KTController {
-    @FXML private TextField playerNameField;
     @FXML private ComboBox<String> algorithmComboBox;
     @FXML private GridPane chessBoard;
     @FXML private Label statusLabel;
@@ -31,13 +31,13 @@ public class KTController {
     private Point startingPosition;
     private List<Point> solutionPath;
     private DatabaseManager dbManager;
+    private UserSessionService userSessionService;
 
     // Added for manual movement
     private Point currentPosition;
     private int moveCount = 0;
     private List<Point> playerMoves = new ArrayList<>();
     private boolean gameInProgress = false;
-    private boolean autoSolveMode = false;
     private long startTime; // Track when the game started
 
     // For hint functionality
@@ -59,7 +59,16 @@ public class KTController {
         algorithmComboBox.setValue("Warnsdorff");
         initializeChessBoard();
         dbManager = new DatabaseManager();
-        statusLabel.setText("Enter your name and click Start Game");
+        userSessionService = UserSessionService.getInstance(); // Initialize the user session service
+
+        // Check if user is logged in
+        if (userSessionService.isLoggedIn()) {
+            String username = userSessionService.getCurrentUser().getUsername();
+            statusLabel.setText("Welcome " + username + "! Click Start Game");
+
+        }else {
+            statusLabel.setText("Please log in to play the game");
+        }
 
         // Initialize models
         backtrackingModel = new BacktrackingKnightTour(BOARD_SIZE);
@@ -81,8 +90,8 @@ public class KTController {
 
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
-                Rectangle square = new Rectangle(50, 50);
-                square.setFill((row + col) % 2 == 0 ? Color.WHITE : Color.LIGHTGRAY);
+                Rectangle square = new Rectangle(70, 70);
+                square.setFill((row + col) % 2 == 0 ? Color.WHITE : Color.DARKGRAY);
 
                 final int r = row;
                 final int c = col;
@@ -105,9 +114,9 @@ public class KTController {
 
     @FXML
     private void startGame() {
-        String playerName = playerNameField.getText().trim();
-        if (playerName.isEmpty()) {
-            showAlert("Error", "Player name is required");
+        // Check if user is logged in
+        if (!userSessionService.isLoggedIn()) {
+            showAlert("Error", "You must be logged in to play");
             return;
         }
 
@@ -120,13 +129,11 @@ public class KTController {
         // Reset any previous game state
         resetGame();
 
-        // Disable editing of the player name field and algorithm selection after game starts
-        playerNameField.setEditable(false);
+        // Disable algorithm selection after game starts
         algorithmComboBox.setDisable(true);
 
         // Enable game in progress flag
         gameInProgress = true;
-        autoSolveMode = false;
 
         // Record start time
         startTime = System.currentTimeMillis();
@@ -258,7 +265,7 @@ public class KTController {
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
                 Rectangle square = new Rectangle(50, 50);
-                square.setFill((row + col) % 2 == 0 ? Color.WHITE : Color.LIGHTGRAY);
+                square.setFill((row + col) % 2 == 0 ? Color.MINTCREAM : Color.MIDNIGHTBLUE);
                 boardSquares[row][col] = square;
 
                 final int r = row;
@@ -279,14 +286,15 @@ public class KTController {
     }
 
     private void handleSquareClick(int row, int col) {
-        // Check if player name is entered when trying to place knight
-        if (!gameInProgress && playerNameField.getText().trim().isEmpty()) {
-            showAlert("Error", "Please enter your name before starting the game");
+
+        // Check if user is logged in
+        if (!userSessionService.isLoggedIn()) {
+            showAlert("Error", "You must be logged in to play");
             return;
         }
 
         // If game is in progress, handle move
-        if (gameInProgress && !autoSolveMode) {
+        if (gameInProgress) {
             makeMove(row, col);
         }
     }
@@ -440,7 +448,6 @@ public class KTController {
             saveGameToDatabase();
 
             // Allow starting a new game
-            playerNameField.setEditable(true);
             algorithmComboBox.setDisable(false);
             undoButton.setDisable(true);
         } else {
@@ -450,7 +457,7 @@ public class KTController {
                 if (backtrackingEnabled && playerMoves.size() > 1) {
                     statusLabel.setText("No more valid moves! You can backtrack using the Undo button.");
                     // Keep undo button enabled for backtracking
-                    undoButton.setDisable(false);  // ADD THIS LINE
+                    undoButton.setDisable(false);
                 } else {
                     gameInProgress = false;
                     statusLabel.setText("No more valid moves! Game Over.");
@@ -459,19 +466,17 @@ public class KTController {
                     showAlert("Game Over", "You've reached a dead end with " + moveCount + " moves. No more valid moves available!");
 
                     // Allow starting a new game
-                    playerNameField.setEditable(true);
                     algorithmComboBox.setDisable(false);
                     undoButton.setDisable(true);
                 }
             } else {
                 // Valid moves exist, make sure undo is enabled if backtracking is allowed
-                undoButton.setDisable(!backtrackingEnabled);  // ADD THIS LINE
+                undoButton.setDisable(!backtrackingEnabled);
             }
         }
     }
 
     private void saveGameToDatabase() {
-        String playerName = playerNameField.getText().trim();
         String algorithm = algorithmComboBox.getValue();
         String startPosition = startingPosition.x + "," + startingPosition.y;
 
@@ -493,7 +498,7 @@ public class KTController {
         timeLabel.setText("Time: " + executionTime + "ms");
 
         // Save to database
-        dbManager.saveSolution(playerName, algorithm, startPosition, solutionPath, executionTime);
+        dbManager.saveSolution(algorithm, startPosition, solutionPath, executionTime);
     }
 
     @FXML
@@ -533,7 +538,6 @@ public class KTController {
     @FXML
     private void resetGame() {
         gameInProgress = false;
-        autoSolveMode = false;
         moveCount = 0;
         currentPosition = null;
         hintPosition = null;
@@ -545,14 +549,13 @@ public class KTController {
         timeLabel.setText("");
 
         // Allow editing player name and algorithm
-        playerNameField.setEditable(true);
         algorithmComboBox.setDisable(false);
         undoButton.setDisable(true);
     }
 
     @FXML
     private void showHint() {
-        if (!gameInProgress || autoSolveMode) {
+        if (!gameInProgress) {
             return;
         }
 
@@ -678,128 +681,6 @@ public class KTController {
         highlightValidMoves(currentPosition.x, currentPosition.y);
 
         hintPosition = null;
-    }
-
-    @FXML
-    private void autoSolve() {
-        if (!gameInProgress) {
-            showAlert("Error", "Please start a game first");
-            return;
-        }
-
-        autoSolveMode = true;
-        statusLabel.setText("Auto-solving the Knight's Tour...");
-
-        // Reset game state but keep the starting position
-        resetChessBoard();
-        playerMoves.clear();
-        playerMoves.add(new Point(startingPosition.x, startingPosition.y));
-        currentPosition = new Point(startingPosition.x, startingPosition.y);
-        moveCount = 0;
-
-        // If we have a pre-calculated path, use it
-        if (completeTourPath != null && !completeTourPath.isEmpty()) {
-            animateAutoSolve(completeTourPath);
-        } else {
-            // Otherwise, solve from the current position
-            String selectedAlgorithm = algorithmComboBox.getValue();
-            List<Point> solution = new ArrayList<>();
-
-            if ("Backtracking".equals(selectedAlgorithm)) {
-                backtrackingModel = new BacktrackingKnightTour(BOARD_SIZE);
-                if (backtrackingModel.solveKnightTour(startingPosition.x, startingPosition.y)) {
-                    List<BacktrackingKnightTour.Point> modelPath = backtrackingModel.getSolutionPath();
-                    for (BacktrackingKnightTour.Point p : modelPath) {
-                        solution.add(new Point(p.x, p.y));
-                    }
-                }
-            } else {
-                warnsdorffModel = new WarnsdorffKnightTour(BOARD_SIZE);
-                if (warnsdorffModel.solveKnightTour(startingPosition.x, startingPosition.y)) {
-                    List<WarnsdorffKnightTour.Point> modelPath = warnsdorffModel.getSolutionPath();
-                    for (WarnsdorffKnightTour.Point p : modelPath) {
-                        solution.add(new Point(p.x, p.y));
-                    }
-                }
-            }
-
-            if (!solution.isEmpty()) {
-                animateAutoSolve(solution);
-            } else {
-                statusLabel.setText("No solution found for this starting position.");
-                autoSolveMode = false;
-            }
-        }
-    }
-
-    private void animateAutoSolve(List<Point> solution) {
-        // Update the UI to show the full solution
-        resetChessBoard();
-
-        // Draw path numbers at each position
-        for (int i = 0; i < solution.size(); i++) {
-            Point p = solution.get(i);
-
-            Rectangle square = new Rectangle(50, 50);
-            if (i == 0) {
-                square.setFill(Color.CORNFLOWERBLUE); // Starting position
-            } else {
-                square.setFill(Color.LIGHTSALMON);
-            }
-
-            Text numberText = new Text(Integer.toString(i));
-            numberText.setStyle("-fx-font-size: 12;");
-
-            StackPane stackPane = new StackPane();
-            stackPane.getChildren().addAll(square, numberText);
-
-            chessBoard.add(stackPane, p.y, p.x);
-        }
-
-        // Place knight at final position
-        if (!solution.isEmpty()) {
-            Point lastPos = solution.get(solution.size() - 1);
-            Rectangle knightSquare = new Rectangle(50, 50);
-            knightSquare.setFill(Color.GREEN);
-            Text knightText = new Text("♞");
-            knightText.setStyle("-fx-font-size: 24;");
-
-            StackPane knightPane = new StackPane();
-            knightPane.getChildren().addAll(knightSquare, knightText);
-
-            chessBoard.add(knightPane, lastPos.y, lastPos.x);
-        }
-
-        // Calculate execution time
-        long executionTime = System.currentTimeMillis() - startTime;
-
-        // Format solution path as string for database
-        StringBuilder solutionPathBuilder = new StringBuilder();
-        for (int i = 0; i < solution.size(); i++) {
-            Point p = solution.get(i);
-            solutionPathBuilder.append(p.x).append(",").append(p.y);
-            if (i < solution.size() - 1) {
-                solutionPathBuilder.append(";");
-            }
-        }
-        String solutionPath = solutionPathBuilder.toString();
-
-        // Save the auto-solved solution to database
-        String playerName = playerNameField.getText().trim();
-        String algorithm = algorithmComboBox.getValue();
-        String startPosition = startingPosition.x + "," + startingPosition.y;
-
-        dbManager.saveSolution(playerName, algorithm, startPosition, solutionPath, executionTime);
-
-        // Update labels
-        timeLabel.setText("Time: " + executionTime + "ms");
-
-        movesCountLabel.setText("Moves: " + (solution.size() - 1));
-
-        // End game
-        gameInProgress = false;
-        playerNameField.setEditable(true);
-        algorithmComboBox.setDisable(false);
     }
 
     private void updateChessBoardCell(int row, int col, Rectangle square, Text text) {
