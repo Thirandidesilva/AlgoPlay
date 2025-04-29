@@ -1,17 +1,22 @@
 package org.example.algoplay.controllers.games;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import org.example.algoplay.models.BacktrackingKnightTour;
 import org.example.algoplay.models.WarnsdorffKnightTour;
 import org.example.algoplay.services.DatabaseManager;
 import org.example.algoplay.services.UserSessionService;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,35 +58,53 @@ public class KTController {
     private BacktrackingKnightTour backtrackingModel;
     private WarnsdorffKnightTour warnsdorffModel;
 
+    // Initialize method with exception handling
     @FXML
     public void initialize() {
-        algorithmComboBox.getItems().addAll("Backtracking", "Warnsdorff");
-        algorithmComboBox.setValue("Warnsdorff");
-        initializeChessBoard();
-        dbManager = new DatabaseManager();
-        userSessionService = UserSessionService.getInstance(); // Initialize the user session service
+        try {
+            algorithmComboBox.getItems().addAll("Backtracking", "Warnsdorff");
+            algorithmComboBox.setValue("Warnsdorff");
+            initializeChessBoard();
 
-        // Check if user is logged in
-        if (userSessionService.isLoggedIn()) {
-            String username = userSessionService.getCurrentUser().getUsername();
-            statusLabel.setText("Welcome " + username + "! Click Start Game");
+            try {
+                dbManager = new DatabaseManager();
+            } catch (Exception e) {
+                showAlert("Database Error", "Could not initialize database manager: " + e.getMessage());
+                System.err.println("Database initialization error: " + e.getMessage());
+                e.printStackTrace();
+            }
 
-        }else {
-            statusLabel.setText("Please log in to play the game");
+            userSessionService = UserSessionService.getInstance();
+
+            if (userSessionService.isLoggedIn()) {
+                String username = userSessionService.getCurrentUser().getUsername();
+                statusLabel.setText("Welcome " + username + "! Click Start Game");
+            } else {
+                statusLabel.setText("Please log in to play the game");
+            }
+
+            // Initialize models with exception handling
+            try {
+                backtrackingModel = new BacktrackingKnightTour(BOARD_SIZE);
+                warnsdorffModel = new WarnsdorffKnightTour(BOARD_SIZE);
+            } catch (Exception e) {
+                showAlert("Error", "Failed to initialize game algorithms: " + e.getMessage());
+                System.err.println("Algorithm initialization error: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            // Initialize undo button as disabled
+            undoButton.setDisable(true);
+
+            // Enable backtracking when "Backtracking" algorithm is selected
+            algorithmComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+                backtrackingEnabled = "Backtracking".equals(newValue);
+            });
+        } catch (Exception e) {
+            showAlert("Initialization Error", "Failed to initialize the game: " + e.getMessage());
+            System.err.println("Initialization error: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        // Initialize models
-        backtrackingModel = new BacktrackingKnightTour(BOARD_SIZE);
-        warnsdorffModel = new WarnsdorffKnightTour(BOARD_SIZE);
-
-        // Initialize undo button as disabled
-        undoButton.setDisable(true);
-
-        // Enable backtracking when "Backtracking" algorithm is selected
-        algorithmComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            backtrackingEnabled = "Backtracking".equals(newValue);
-        });
-
     }
 
     private void initializeChessBoard() {
@@ -91,7 +114,7 @@ public class KTController {
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
                 Rectangle square = new Rectangle(70, 70);
-                square.setFill((row + col) % 2 == 0 ? Color.WHITE : Color.DARKGRAY);
+                square.setFill((row + col) % 2 == 0 ? Color.SLATEGRAY: Color.GHOSTWHITE);
 
                 final int r = row;
                 final int c = col;
@@ -150,7 +173,7 @@ public class KTController {
         resetChessBoard();
 
         // Mark starting position with blue and place a knight symbol
-        Rectangle startSquare = new Rectangle(50, 50);
+        Rectangle startSquare = new Rectangle(70, 70);
         startSquare.setFill(Color.CORNFLOWERBLUE);
 
         Text knightText = new Text("♞"); // Unicode knight chess symbol
@@ -264,8 +287,8 @@ public class KTController {
 
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
-                Rectangle square = new Rectangle(50, 50);
-                square.setFill((row + col) % 2 == 0 ? Color.MINTCREAM : Color.MIDNIGHTBLUE);
+                Rectangle square = new Rectangle(70, 70);
+                square.setFill((row + col) % 2 == 0 ? Color.SLATEGRAY : Color.GHOSTWHITE);
                 boardSquares[row][col] = square;
 
                 final int r = row;
@@ -303,6 +326,7 @@ public class KTController {
         // Check if the move is valid
         if (!isValidKnightMove(currentPosition.x, currentPosition.y, row, col)) {
             statusLabel.setText("Invalid move! Knights move in an L-shape.");
+            new Alert(Alert.AlertType.ERROR, "Invalid move! Knights move in an L-shape.").showAndWait();
             return;
         }
 
@@ -327,7 +351,7 @@ public class KTController {
         drawVisitedPath();
 
         // Place the knight at the new position
-        Rectangle knightSquare = new Rectangle(50, 50);
+        Rectangle knightSquare = new Rectangle(70, 70);
         knightSquare.setFill(Color.CORNFLOWERBLUE);
         Text knightText = new Text("♞");
         knightText.setStyle("-fx-font-size: 24;");
@@ -362,7 +386,7 @@ public class KTController {
         List<Point> validMoves = getValidKnightMoves(row, col);
 
         for (Point move : validMoves) {
-            Rectangle validSquare = new Rectangle(50, 50);
+            Rectangle validSquare = new Rectangle(70, 70);
             validSquare.setFill(Color.LIGHTGREEN);
             validSquare.setOpacity(0.5);
 
@@ -415,7 +439,7 @@ public class KTController {
         for (int i = 0; i < playerMoves.size(); i++) {
             Point p = playerMoves.get(i);
 
-            Rectangle visitedSquare = new Rectangle(50, 50);
+            Rectangle visitedSquare = new Rectangle(70, 70);
             // Use different color for starting position
             if (i == 0) {
                 visitedSquare.setFill(Color.LIGHTBLUE);
@@ -463,7 +487,7 @@ public class KTController {
                     statusLabel.setText("No more valid moves! Game Over.");
 
                     // Show dead end popup
-                    showAlert("Game Over", "You've reached a dead end with " + moveCount + " moves. No more valid moves available!");
+                    showAlert("Game Over", "No more valid moves available! You've reached a dead end with " + moveCount + " moves.");
 
                     // Allow starting a new game
                     algorithmComboBox.setDisable(false);
@@ -497,8 +521,15 @@ public class KTController {
         // Display time in the UI
         timeLabel.setText("Time: " + executionTime + "ms");
 
-        // Save to database
-        dbManager.saveSolution(algorithm, startPosition, solutionPath, executionTime);
+        // Database exception handling
+        try {
+            // Save to database
+            dbManager.saveSolution(algorithm, startPosition, solutionPath, executionTime);
+        } catch (Exception e) {
+            showAlert("Error", "An unexpected error occurred while saving results: " + e.getMessage());
+            System.err.println("Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -521,7 +552,7 @@ public class KTController {
         drawVisitedPath();
 
         // Place knight at current position
-        Rectangle knightSquare = new Rectangle(50, 50);
+        Rectangle knightSquare = new Rectangle(70, 70);
         knightSquare.setFill(Color.CORNFLOWERBLUE);
         Text knightText = new Text("♞");
         knightText.setStyle("-fx-font-size: 24;");
@@ -535,6 +566,7 @@ public class KTController {
         highlightValidMoves(currentPosition.x, currentPosition.y);
     }
 
+
     @FXML
     private void resetGame() {
         gameInProgress = false;
@@ -543,7 +575,7 @@ public class KTController {
         hintPosition = null;
         playerMoves.clear();
         resetChessBoard();
-        statusLabel.setText("Game reset. Enter your name and click Start Game");
+        statusLabel.setText("Game reset! Click 'Start Game' to start a new game again");
         startPositionLabel.setText("Starting Position: ");
         movesCountLabel.setText("Moves: 0");
         timeLabel.setText("");
@@ -569,7 +601,7 @@ public class KTController {
 
         if (hintPosition != null) {
             // Display hint
-            Rectangle hintSquare = new Rectangle(50, 50);
+            Rectangle hintSquare = new Rectangle(70, 70);
             hintSquare.setFill(Color.GOLD);
             hintSquare.setOpacity(0.7);
 
@@ -671,7 +703,7 @@ public class KTController {
         drawVisitedPath();
 
         // Place the knight at the current position
-        Rectangle knightSquare = new Rectangle(50, 50);
+        Rectangle knightSquare = new Rectangle(70, 70);
         knightSquare.setFill(Color.CORNFLOWERBLUE);
         Text knightText = new Text("♞");
         knightText.setStyle("-fx-font-size: 24;");
