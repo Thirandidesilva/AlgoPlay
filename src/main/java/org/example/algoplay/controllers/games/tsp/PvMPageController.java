@@ -1,5 +1,6 @@
 package org.example.algoplay.controllers.games.tsp;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
@@ -14,6 +15,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
+import org.example.algoplay.services.UserSessionService;
 import org.example.algoplay.view.ScoresPage;
 import org.example.algoplay.games.tsp.TspPerformanceTracker;
 import org.example.algoplay.games.tsp.*;
@@ -73,6 +75,11 @@ public class PvMPageController implements Initializable {
     @FXML private Button showBestPathBtn;
     @FXML private ToggleButton advancedToggle;
     @FXML private BorderPane mainContainer;
+    @FXML private Label rdsPathLabel;
+    @FXML private Label rdsTimeLabel;
+    @FXML private Label rdsStatsLabel;
+    @FXML private Label rdsWinnerLabel;
+    @FXML private ProgressIndicator rdsProgress;
 
     @FXML private ProgressIndicator antProgress;
     @FXML private ProgressIndicator beeProgress;
@@ -95,6 +102,8 @@ public class PvMPageController implements Initializable {
     private long hybridTime = 0;
 
     private TspPerformanceTracker performanceTracker = new TspPerformanceTracker();
+    private static PvMPageController instance;
+
 
     // Color scheme
     private final Color backgroundColor = Color.web("#1e1e2e");
@@ -102,15 +111,17 @@ public class PvMPageController implements Initializable {
     private final Color secondaryColor = Color.web("#a6e3a1");
     private final Color accentColor = Color.web("#f5c2e7");
     private final Color textColor = Color.web("#cdd6f4");
-    private final Color userPathColor = Color.web("#f38ba8");
-    private final Color antPathColor = Color.web("#89dceb");
-    private final Color beePathColor = Color.web("#fab387");
-    private final Color hybridPathColor = Color.web("#a6e3a1");
+    private final Color userPathColor = Color.web("#645dd7");
+    private final Color antPathColor = Color.web("#ff1654");
+    private final Color beePathColor = Color.web("#f2af29");
+    private final Color hybridPathColor = Color.web("#0ead69");
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize graphics context
         gc = canvas.getGraphicsContext2D();
+        instance = this;
+
 
         // Apply styling to elements
         applyStyles();
@@ -270,18 +281,21 @@ public class PvMPageController implements Initializable {
     }
 
     private void testDatabaseConnection() {
-        TspDatabaseManager dbManager = new TspDatabaseManager();
-        if (dbManager.testConnection()) {
+        TspDatabaseManager db = new TspDatabaseManager();
+        boolean success = db.saveStructuredData(performanceTracker.getCurrentResults());
+
+        if (!success) {
+            System.out.println("Warning: Failed to save TSP session.");
+        }
+
+        if (db.testConnection()) {
             System.out.println("Successfully connected to database");
-            if (dbManager.initializeDatabase()) {
-                System.out.println("Database initialized successfully");
-            } else {
-                System.out.println("Failed to initialize database");
-            }
+
         } else {
             System.out.println("Failed to connect to database. Check your connection settings.");
         }
     }
+
 
     private void handleCanvasClick(MouseEvent e) {
         if (pathCreationMode) {
@@ -314,6 +328,16 @@ public class PvMPageController implements Initializable {
             }
         }
     }
+
+    public static void updateDreamProgress(double progress) {
+        Platform.runLater(() -> {
+            if (instance != null && instance.rdsProgress != null) {
+                instance.rdsProgress.setProgress(progress);
+            }
+        });
+    }
+
+
 
     private int findNearestCity(double x, double y) {
         int nearest = -1;
@@ -405,7 +429,16 @@ public class PvMPageController implements Initializable {
         userTimeLabel.setText(userDuration + "ms");
 
         // Record user performance
-        performanceTracker.recordPerformance("User", userLen, userDuration, userPath, cityPoints.size());
+        // Assume you have userPath calculated here
+
+        String username = "User"; // Default fallback
+        if (UserSessionService.getInstance().isLoggedIn()) {
+            username = UserSessionService.getInstance().getCurrentUser().getUsername();
+        }
+
+        // Record human user's solution
+        performanceTracker.recordPerformance(username, userLen, userDuration, userPath, cityPoints.size());
+
 
         // Run the algorithms
         // Ant Solver
@@ -459,12 +492,36 @@ public class PvMPageController implements Initializable {
         // Record Hybrid performance
         performanceTracker.recordPerformance("Hybrid", hybridLen, hybridTime, hybridPath, cityPoints.size());
 
+        // RDS Solver
+        rdsProgress.setVisible(true);
+        startTime = System.currentTimeMillis();
+        TspSolver rdsSolver = new RdsSolver();
+        rdsSolver.initialize(distances, cities);
+        List<Integer> rdsPath = rdsSolver.solve();
+        long rdsEndTime = System.currentTimeMillis();
+        long rdsTime = rdsEndTime - startTime;
+        int rdsLen = calcLen(rdsPath, distances);
+
+// Update RDS GUI
+        rdsTimeLabel.setText(rdsTime + "ms");
+        rdsPathLabel.setText(formatPath(rdsPath));
+        rdsStatsLabel.setText("Length: " + rdsLen + " (" + cityPoints.size() + " cities)");
+        rdsProgress.setVisible(false);
+
+// Record RDS performance
+        performanceTracker.recordPerformance("RDS", rdsLen, rdsTime, rdsPath, cityPoints.size());
+
+
+
+
         // Redraw everything with paths
         drawCities();
         drawPath(userPath, userPathColor, 3);
         drawPath(antPath, antPathColor, 2);
         drawPath(beePath, beePathColor, 2);
         drawPath(hybridPath, hybridPathColor, 2);
+        drawPath(rdsPath, Color.MEDIUMPURPLE, 2);
+
 
         // Hide loading state
         statusOverlay.setVisible(false);
@@ -504,6 +561,10 @@ public class PvMPageController implements Initializable {
                 case "Hybrid":
                     hybridWinnerLabel.setText("🏆");
                     break;
+                case "RDS":
+                    rdsWinnerLabel.setText("🏆");
+                    break;
+
             }
         }
 
