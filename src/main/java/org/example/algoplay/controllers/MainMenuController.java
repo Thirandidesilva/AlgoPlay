@@ -1,5 +1,6 @@
 package org.example.algoplay.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -9,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import org.example.algoplay.EightQueens.MainApp;
 import org.example.algoplay.controllers.games.TohController;
 import org.example.algoplay.models.User;
 import org.example.algoplay.view.HomeScreen;
@@ -206,8 +208,22 @@ public class MainMenuController {
                     fxmlPath = "/fxml/toh.fxml";
                     break;
                 case "queens":
-                    // For other games
-                    //fxmlPath = "/fxml/QueensPuzzle.fxml";
+                    // Launch the Eight Queens Application
+                    new Thread(() -> {
+                        // If MainApp.main() has already been called once in your application:
+                        Platform.runLater(() -> {
+                            try {
+                                MainApp queensApp = new MainApp();
+                                Stage newStage = new Stage();
+                                queensApp.start(newStage);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        });
+
+                        // OR if MainApp hasn't been launched yet:
+                        // MainApp.main(null);
+                    }).start();
                     break;
                 case "knights":
                     fxmlPath = "/fxml/KTView.fxml";
