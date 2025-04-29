@@ -195,7 +195,7 @@ public class KTController {
         String selectedAlgorithm = algorithmComboBox.getValue();
         boolean solutionFound = false;
         int attempts = 0;
-        Random random = new Random();
+        Random random = new Random(); //Starting position set to random
 
         while (!solutionFound && attempts < 100) { // Can adjust the attempt limit if needed
             attempts++;

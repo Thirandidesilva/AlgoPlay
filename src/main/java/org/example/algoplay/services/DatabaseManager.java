@@ -82,9 +82,7 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Get username from user ID by querying the users table
-     */
+    //Get username from user ID by querying the users table
     private String getUsernameFromId(int userId) {
         String sql = "SELECT username FROM users WHERE user_id = ?";
         String username = null;
@@ -101,10 +99,8 @@ public class DatabaseManager {
         return username;
     }
 
-    /**
-     * Retrieves all solutions from the database
-     */
-    public List<SolutionRecord> getAllSolutions() {
+    //Retrieves all solutions from the database
+     public List<SolutionRecord> getAllSolutions() {
         List<SolutionRecord> solutions = new ArrayList<>();
         String sql = "SELECT * FROM knight_tour_solutions " +
                 "ORDER BY created_at DESC";
@@ -134,10 +130,8 @@ public class DatabaseManager {
         return solutions;
     }
 
-    /**
-     * Get average execution time grouped by algorithm
-     */
-    public Map<String, Double> getAverageExecutionTimeByAlgorithm() {
+    //Get average execution time grouped by algorithm
+     public Map<String, Double> getAverageExecutionTimeByAlgorithm() {
         Map<String, Double> averageTimes = new HashMap<>();
         String sql = "SELECT algorithm, AVG(execution_time) as avg_time FROM knight_tour_solutions GROUP BY algorithm";
 
@@ -155,9 +149,7 @@ public class DatabaseManager {
         return averageTimes;
     }
 
-    /**
-     * Get count of solutions by algorithm
-     */
+    //Get count of solutions by algorithm
     public Map<String, Integer> getSolutionCountByAlgorithm() {
         Map<String, Integer> counts = new HashMap<>();
         String sql = "SELECT algorithm, COUNT(*) as count FROM knight_tour_solutions GROUP BY algorithm";
@@ -176,9 +168,7 @@ public class DatabaseManager {
         return counts;
     }
 
-    /**
-     * Retrieves solutions for a specific user
-     */
+    //Retrieves solutions for a specific user
     public List<SolutionRecord> getSolutionsForCurrentUser() {
         List<SolutionRecord> solutions = new ArrayList<>();
 
@@ -219,10 +209,8 @@ public class DatabaseManager {
         return solutions;
     }
 
-    /**
-     * Converts a solution path string to a list of points
-     */
-    public List<Point> convertPathStringToPoints(String pathString) {
+    //Converts a solution path string to a list of points
+     public List<Point> convertPathStringToPoints(String pathString) {
         List<Point> points = new ArrayList<>();
         String[] coords = pathString.split(";");
 
@@ -244,10 +232,8 @@ public class DatabaseManager {
         return points;
     }
 
-    /**
-     * Record class to hold solution data
-     */
-    public static class SolutionRecord {
+    //Record class to hold solution data
+     public static class SolutionRecord {
         private final int id;
         private final int gameId;
         private final int userId;
