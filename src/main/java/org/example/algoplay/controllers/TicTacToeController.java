@@ -18,6 +18,8 @@ import org.example.algoplay.utils.TimeTracker;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class TicTacToeController implements Initializable {
@@ -146,23 +148,21 @@ public class TicTacToeController implements Initializable {
         statusLabel.setText("Your turn");
     }
 
-    /**
-     * Ensures there is a valid user ID available
-     */
     private void ensureValidUser() {
         if (userId <= 0) {
             // First check if user exists
+            ResultSet rs = null;
             try {
-                ResultSet rs = DatabaseService.getInstance().executeQuery(
+                rs = DatabaseService.getInstance().executeQuery(
                         "SELECT user_id FROM users WHERE username = ?", playerName);
 
                 if (rs != null && rs.next()) {
                     userId = rs.getInt("user_id");
-                    rs.close();
-                } else if (rs != null) {
-                    rs.close();
+                    System.out.println("Found existing user with ID: " + userId);
+                } else {
                     // Create new user if not exists
                     userId = saveUser(playerName);
+                    System.out.println("Created new user with ID: " + userId);
 
                     // Update UserSessionService if user is created
                     if (userId > 0) {
@@ -172,6 +172,7 @@ public class TicTacToeController implements Initializable {
                 }
             } catch (SQLException e) {
                 System.err.println("Error checking user: " + e.getMessage());
+                e.printStackTrace();
                 // Create user as fallback
                 userId = saveUser(playerName);
 
@@ -179,6 +180,14 @@ public class TicTacToeController implements Initializable {
                 if (userId > 0) {
                     User user = new User(userId, playerName);
                     UserSessionService.getInstance().setCurrentUser(user);
+                }
+            } finally {
+                if (rs != null) {
+                    try {
+                        rs.close();
+                    } catch (SQLException e) {
+                        System.err.println("Error closing ResultSet: " + e.getMessage());
+                    }
                 }
             }
         }
@@ -245,6 +254,21 @@ public class TicTacToeController implements Initializable {
         }
     }
 
+    private static class AlgorithmMove {
+        String algorithmName;
+        long executionTime;
+        int moveNumber;
+
+        public AlgorithmMove(String algorithmName, long executionTime, int moveNumber) {
+            this.algorithmName = algorithmName;
+            this.executionTime = executionTime;
+            this.moveNumber = moveNumber;
+        }
+    }
+
+    private List<AlgorithmMove> pendingAlgorithmMoves = new ArrayList<>();
+
+
     private void makeAIMove() {
         timeTracker.start();
 
@@ -262,6 +286,10 @@ public class TicTacToeController implements Initializable {
         long executionTime = timeTracker.stop();
 
         if (move != null) {
+            // Save algorithm move for later storage
+            pendingAlgorithmMoves.add(new AlgorithmMove(algorithmName, executionTime, moveNumber));
+            moveNumber++;
+
             // Update UI on JavaFX thread
             javafx.application.Platform.runLater(() -> {
                 board.placeMove(move[0], move[1], 'O');
@@ -269,12 +297,6 @@ public class TicTacToeController implements Initializable {
                 buttons[move[0]][move[1]].setStyle("-fx-background-color: #F0B337;");
                 aiMoves++;
                 updateMoveCountLabel();
-
-                // Save algorithm performance if we have a valid resultId
-                if (resultId > 0) {
-                    saveAlgorithmPerformance(resultId, algorithmName, executionTime, moveNumber);
-                    moveNumber++;
-                }
 
                 if (board.checkWin('O')) {
                     endGame(false, false); // AI wins
@@ -351,6 +373,15 @@ public class TicTacToeController implements Initializable {
         } else {
             System.err.println("Cannot save game round: Invalid user ID");
         }
+
+        if (resultId > 0) {
+            // Save all pending algorithm moves
+            for (AlgorithmMove move : pendingAlgorithmMoves) {
+                saveAlgorithmPerformance(resultId, move.algorithmName, move.executionTime, move.moveNumber);
+            }
+            // Clear the list for the next game
+            pendingAlgorithmMoves.clear();
+        }
     }
 
     private void highlightBoard(String color) {
@@ -394,36 +425,28 @@ public class TicTacToeController implements Initializable {
         return false;
     }
 
-    // Database methods adapted to use DatabaseService
+
+
+
+
+
+
+
     private int saveUser(String username) {
-        try {
-            if (username == null || username.trim().isEmpty()) {
-                username = "Guest"; // Fallback to Guest if username is empty
-            }
-
-            System.out.println("Creating new user: " + username);
-
-            ResultSet rs = DatabaseService.getInstance().executeQuery(
-                    "INSERT INTO users (username, password) VALUES (?, 'default') RETURNING user_id",
-                    username);
-
-            if (rs != null && rs.next()) {
-                int newUserId = rs.getInt(1);
-                rs.close();
-                System.out.println("Successfully created user with ID: " + newUserId);
-                return newUserId;
-            } else if (rs != null) {
-                rs.close();
-            }
-        } catch (SQLException e) {
-            System.err.println("Error saving user: " + e.getMessage());
+        if (username == null || username.trim().isEmpty()) {
+            username = "Guest"; // Fallback to Guest if username is empty
         }
-        return -1;
+
+        System.out.println("Creating new user: " + username);
+
+        // Using the new executeInsert method for cleaner code
+        return DatabaseService.getInstance().executeInsert(
+                "INSERT INTO users (username, password) VALUES (?, 'default') RETURNING user_id",
+                username);
     }
 
-    /**
-     * Save game result to the ttt_game_results table
-     */
+
+
     private int saveTTTGameResult(int userId, String playerName, String difficulty, String result, int playerMoves, int aiMoves) {
         try {
             // Check for valid inputs
@@ -432,23 +455,19 @@ public class TicTacToeController implements Initializable {
                 return -1;
             }
 
-            ResultSet rs = DatabaseService.getInstance().executeQuery(
+            System.out.println("Saving TTT game result for user ID: " + userId);
+
+            // Using the new executeInsert method
+            return DatabaseService.getInstance().executeInsert(
                     "INSERT INTO ttt_game_results (user_id, player_name, difficulty, result, player_moves, ai_moves) " +
                             "VALUES (?, ?, ?, ?, ?, ?) RETURNING result_id",
                     userId, playerName, difficulty, result, playerMoves, aiMoves);
 
-            if (rs != null && rs.next()) {
-                int newResultId = rs.getInt(1);
-                rs.close();
-                System.out.println("Successfully saved TTT game result with ID: " + newResultId);
-                return newResultId;
-            } else if (rs != null) {
-                rs.close();
-            }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.err.println("Error saving TTT game result: " + e.getMessage());
+            e.printStackTrace();
+            return -1;
         }
-        return -1;
     }
 
     private int saveGameRound(int gameId, int userId, boolean isCorrect, int score) {
@@ -461,40 +480,28 @@ public class TicTacToeController implements Initializable {
 
             System.out.println("Saving game round with User ID: " + userId + ", Game ID: " + gameId);
 
-            ResultSet gameRoundRs = DatabaseService.getInstance().executeQuery(
+            // Using the new executeInsert method
+            return DatabaseService.getInstance().executeInsert(
                     "INSERT INTO game_rounds (game_id, user_id, is_correct, score) " +
                             "VALUES (?, ?, ?, ?) RETURNING round_id",
                     gameId, userId, isCorrect, score);
 
-            int gameRoundId = -1;
-            if (gameRoundRs != null && gameRoundRs.next()) {
-                gameRoundId = gameRoundRs.getInt(1);
-                gameRoundRs.close();
-                System.out.println("Successfully inserted into game_rounds with ID: " + gameRoundId);
-                return gameRoundId;
-            } else if (gameRoundRs != null) {
-                gameRoundRs.close();
-            }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.err.println("Error saving game round: " + e.getMessage());
+            e.printStackTrace();
+            return -1;
         }
-        return -1;
     }
 
-    /**
-     * Save data to tictactoe_rounds table
-     */
     private boolean saveTicTacToeRound(int roundId, int gameId, int userId, String result, String difficulty) {
+        ResultSet checkRs = null;
         try {
             // First check if a record with this round_id already exists
-            ResultSet checkRs = DatabaseService.getInstance().executeQuery(
+            checkRs = DatabaseService.getInstance().executeQuery(
                     "SELECT 1 FROM tictactoe_rounds WHERE round_id = ?",
                     roundId);
 
             boolean recordExists = checkRs != null && checkRs.next();
-            if (checkRs != null) {
-                checkRs.close();
-            }
 
             // If record already exists, return true without trying to insert
             if (recordExists) {
@@ -502,40 +509,74 @@ public class TicTacToeController implements Initializable {
                 return true;
             }
 
+            System.out.println("Inserting new record into tictactoe_rounds with round_id=" + roundId);
+
             // Otherwise, proceed with insertion
-            DatabaseService.getInstance().executeUpdate(
+            boolean success = DatabaseService.getInstance().executeUpdate(
                     "INSERT INTO tictactoe_rounds (round_id, game_id, user_id, result, difficulty) " +
                             "VALUES (?, ?, ?, ?, ?)",
                     roundId, gameId, userId, result, difficulty);
 
-            System.out.println("Successfully inserted into tictactoe_rounds table with round_id=" + roundId);
-            return true;
+            if (success) {
+                System.out.println("Successfully inserted into tictactoe_rounds table with round_id=" + roundId);
+            } else {
+                System.err.println("Failed to insert into tictactoe_rounds, no rows affected");
+            }
+
+            return success;
+
         } catch (Exception e) {
             System.err.println("Error inserting into tictactoe_rounds: " + e.getMessage());
+            e.printStackTrace();
             return false;
+        } finally {
+            if (checkRs != null) {
+                try {
+                    checkRs.close();
+                } catch (SQLException e) {
+                    System.err.println("Error closing ResultSet: " + e.getMessage());
+                }
+            }
         }
     }
 
-    /**
-     * Saves the algorithm performance data to the database
-     * @param resultId The result ID from ttt_game_results table
-     * @param algorithmName The name of the algorithm used
-     * @param executionTime The execution time in milliseconds
-     * @param moveNumber The move number in the game
-     */
-    private void saveAlgorithmPerformance(int resultId, String algorithmName, long executionTime, int moveNumber) {
-        String insertQuery = "INSERT INTO ttt_algorithm_performance (result_id, algorithm_name, execution_time, move_number) " +
-                "VALUES (?, ?, ?, ?)";
 
+    private void saveAlgorithmPerformance(int resultId, String algorithmName, long executionTime, int moveNumber) {
         try {
-            DatabaseService.getInstance().executeUpdate(insertQuery,
-                    resultId,
-                    algorithmName,
-                    executionTime,
-                    moveNumber);
-            System.out.println("Algorithm performance saved: " + algorithmName + ", Time: " + executionTime + "ms, Move: " + moveNumber);
+            // If we don't have a valid resultId yet, create a temporary one
+            if (resultId <= 0) {
+                // Create a temporary result record
+                resultId = DatabaseService.getInstance().executeInsert(
+                        "INSERT INTO ttt_game_results (user_id, player_name, difficulty, result, player_moves, ai_moves) " +
+                                "VALUES (?, ?, ?, ?, ?, ?) RETURNING result_id",
+                        userId, playerName, currentDifficulty.name(), "in_progress", playerMoves, aiMoves);
+
+                // Update the class field with the new resultId
+                this.resultId = resultId;
+            }
+
+            if (resultId <= 0) {
+                System.err.println("Cannot save algorithm performance: Failed to create temporary result record");
+                return;
+            }
+
+            System.out.println("Saving algorithm performance for result ID: " + resultId);
+
+            boolean success = DatabaseService.getInstance().executeUpdate(
+                    "INSERT INTO ttt_algorithm_performance (result_id, algorithm_name, execution_time, move_number) " +
+                            "VALUES (?, ?, ?, ?)",
+                    resultId, algorithmName, executionTime, moveNumber);
+
+            if (success) {
+                System.out.println("Algorithm performance saved: " + algorithmName + ", Time: " + executionTime + "ms, Move: " + moveNumber);
+            } else {
+                System.err.println("Failed to save algorithm performance, no rows affected");
+            }
+
         } catch (Exception e) {
             System.err.println("Failed to save algorithm performance: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
 }
