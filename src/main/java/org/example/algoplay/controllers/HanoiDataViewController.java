@@ -73,6 +73,11 @@ public class HanoiDataViewController implements Initializable {
         // Make the table resizable
         dataTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
+        // Setup back button style
+        if (backToGameButton != null) {
+            backToGameButton.getStyleClass().add("back-button");
+        }
+
         // Load data
         refreshData();
     }
@@ -125,6 +130,7 @@ public class HanoiDataViewController implements Initializable {
             }
         }
     }
+
     @FXML
     private void backToGame() {
         try {
@@ -143,9 +149,15 @@ public class HanoiDataViewController implements Initializable {
             stage.setScene(tohScene);
             stage.setTitle("Tower of Hanoi");
 
+            // Log navigation
+            System.out.println("Navigating back to Tower of Hanoi game");
+
         } catch (Exception e) {
             System.err.println("Error returning to Tower of Hanoi game");
             e.printStackTrace();
+
+            // Display error in the status label
+            statusLabel.setText("Error returning to game: " + e.getMessage());
         }
     }
 
