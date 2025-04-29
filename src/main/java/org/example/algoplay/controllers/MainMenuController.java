@@ -11,6 +11,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import org.example.algoplay.controllers.games.TohController;
 import org.example.algoplay.models.User;
+import org.example.algoplay.view.HomeScreen;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -209,11 +210,13 @@ public class MainMenuController {
                     //fxmlPath = "/fxml/QueensPuzzle.fxml";
                     break;
                 case "knights":
-                    //fxmlPath = "/fxml/KnightsTour.fxml";
+                    fxmlPath = "/fxml/KTView.fxml";
                     break;
                 case "tsp":
-                    //fxmlPath = "/fxml/TravelingSalesman.fxml";
+                    HomeScreen tspApp = new HomeScreen();
+                    tspApp.start(new Stage());
                     break;
+
                 default:
                     System.err.println("Unknown game ID: " + gameId);
                     return;

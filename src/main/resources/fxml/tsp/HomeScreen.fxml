@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<StackPane fx:id="root" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.algoplay.controllers.games.tsp.HomeScreenController">
+    <children>
+        <BorderPane fx:id="mainContent">
+            <top>
+                <HBox alignment="CENTER_LEFT" spacing="15.0" BorderPane.alignment="CENTER">
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                    </padding>
+                    <children>
+                        <VBox spacing="3.0">
+                            <children>
+                                <Label fx:id="logoLabel" text="AlgoPlay">
+                                    <font>
+                                        <Font name="Monospace Bold" size="28.0" />
+                                    </font>
+                                </Label>
+                                <Label fx:id="subtitleLabel" text="Space Algorithms">
+                                    <font>
+                                        <Font name="Monospace" size="14.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </VBox>
+                        <Button fx:id="homeButton" mnemonicParsing="false" onAction="#handleHomeButton" text="Home">
+                            <font>
+                                <Font name="Monospace" size="14.0" />
+                            </font>
+                        </Button>
+                        <Button fx:id="algorithmsButton" mnemonicParsing="false" onAction="#handleAlgorithmsButton" text="Algorithms">
+                            <font>
+                                <Font name="Monospace" size="14.0" />
+                            </font>
+                        </Button>
+                        <Button fx:id="aboutButton" mnemonicParsing="false" onAction="#handleAboutButton" text="About">
+                            <font>
+                                <Font name="Monospace" size="14.0" />
+                            </font>
+                        </Button>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <HBox alignment="CENTER" spacing="10.0">
+                            <children>
+                                <Circle fx:id="profileIcon" radius="18.0" />
+                                <Label fx:id="usernameLabel" text="User123">
+                                    <font>
+                                        <Font name="Monospace" size="14.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </HBox>
+                        <Button fx:id="logoutButton" mnemonicParsing="false" onAction="#handleLogoutButton" text="Log Out">
+                            <font>
+                                <Font name="Monospace Bold" size="16.0" />
+                            </font>
+                        </Button>
+                    </children>
+                </HBox>
+            </top>
+            <center>
+                <VBox alignment="CENTER" spacing="50.0" BorderPane.alignment="CENTER">
+                    <padding>
+                        <Insets bottom="50.0" left="20.0" right="20.0" top="50.0" />
+                    </padding>
+                    <children>
+                        <Text fx:id="titleLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Traveling Salesman Problem">
+                            <font>
+                                <Font name="Monospace Bold" size="44.0" />
+                            </font>
+                        </Text>
+                        <Text fx:id="subtitleText" strokeType="OUTSIDE" strokeWidth="0.0" text="Solve the classic optimization problem in different modes" textAlignment="CENTER">
+                            <font>
+                                <Font name="Monospace" size="18.0" />
+                            </font>
+                        </Text>
+                        <HBox alignment="CENTER" spacing="30.0">
+                            <children>
+                                <VBox fx:id="pvmCard" alignment="CENTER" onMouseClicked="#launchPvMScreen" prefWidth="300.0" spacing="15.0">
+                                    <padding>
+                                        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+                                    </padding>
+                                    <children>
+                                        <Label text="Player vs Machine">
+                                            <font>
+                                                <Font name="Monospace Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                        <Label alignment="CENTER" text="Test your skills against&#10;different algorithms" textAlignment="CENTER" wrapText="true">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Button fx:id="pvmStartButton" mnemonicParsing="false" onAction="#launchPvMScreen" text="Start">
+                                            <font>
+                                                <Font name="Monospace Bold" size="16.0" />
+                                            </font>
+                                        </Button>
+                                    </children>
+                                </VBox>
+                                <VBox fx:id="mvmCard" alignment="CENTER" onMouseClicked="#launchMvMScreen" prefWidth="300.0" spacing="15.0">
+                                    <padding>
+                                        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+                                    </padding>
+                                    <children>
+                                        <Label text="Machine vs Machine">
+                                            <font>
+                                                <Font name="Monospace Bold" size="20.0" />
+                                            </font>
+                                        </Label>
+                                        <Label alignment="CENTER" text="Compare algorithm&#10;performance and efficiency" textAlignment="CENTER" wrapText="true">
+                                            <font>
+                                                <Font name="Monospace" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Button fx:id="mvmStartButton" mnemonicParsing="false" onAction="#launchMvMScreen" text="Start">
+                                            <font>
+                                                <Font name="Monospace Bold" size="16.0" />
+                                            </font>
+                                        </Button>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </center>
+            <bottom>
+                <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+                    <padding>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </padding>
+                    <children>
+                        <Label fx:id="infoTitle" text="What is the Traveling Salesman Problem?">
+                            <font>
+                                <Font name="Monospace Bold" size="16.0" />
+                            </font>
+                        </Label>
+                        <Text fx:id="infoText" strokeType="OUTSIDE" strokeWidth="0.0" text="The TSP asks the question: Given a list of cities and the distances between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the origin city?" textAlignment="CENTER" wrappingWidth="800.0">
+                            <font>
+                                <Font name="Monospace" size="14.0" />
+                            </font>
+                        </Text>
+                    </children>
+                </VBox>
+            </bottom>
+        </BorderPane>
+    </children>
+</StackPane>
