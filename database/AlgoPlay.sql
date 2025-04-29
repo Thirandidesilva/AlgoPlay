@@ -50,3 +50,42 @@ CREATE TABLE hanoi_algorithm_performance (
     execution_time BIGINT NOT NULL,
     move_sequence TEXT
 );
+
+CREATE TABLE tictactoe_rounds (
+    round_id SERIAL PRIMARY KEY,
+    game_id INTEGER REFERENCES games(game_id),
+    user_id INTEGER REFERENCES users(user_id),
+    result VARCHAR(10) NOT NULL, -- 'win', 'loss', 'draw'
+    difficulty VARCHAR(10) NOT NULL, -- 'EASY', 'MEDIUM', 'HARD'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO games (game_name)
+VALUES
+    ('Tic-Tac-Toe'),
+    ('Tower-Of-Hanoi'),
+    ('Traveling Salesman Problem'),
+    ('Eight Queens Puzzle'),
+    ('Knights Tour Problem');
+
+
+CREATE TABLE ttt_game_results (
+    result_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id),
+    player_name VARCHAR(50) NOT NULL,
+    difficulty VARCHAR(10) NOT NULL, -- 'EASY', 'MEDIUM', 'HARD'
+    result VARCHAR(10) NOT NULL, -- 'win', 'loss', 'draw'
+    player_moves INTEGER NOT NULL,
+    ai_moves INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE ttt_algorithm_performance (
+    perf_id SERIAL PRIMARY KEY,
+    result_id INTEGER REFERENCES ttt_game_results(result_id) ON DELETE CASCADE,
+    algorithm_name VARCHAR(100) NOT NULL,
+    execution_time BIGINT NOT NULL,
+    move_number INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
