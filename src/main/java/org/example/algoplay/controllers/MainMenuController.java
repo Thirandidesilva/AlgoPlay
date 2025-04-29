@@ -209,7 +209,7 @@ public class MainMenuController {
                     //fxmlPath = "/fxml/QueensPuzzle.fxml";
                     break;
                 case "knights":
-                    //fxmlPath = "/fxml/KnightsTour.fxml";
+                    fxmlPath = "/fxml/KTView.fxml";
                     break;
                 case "tsp":
                     //fxmlPath = "/fxml/TravelingSalesman.fxml";
