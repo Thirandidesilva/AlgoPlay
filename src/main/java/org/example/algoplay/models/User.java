@@ -22,6 +22,8 @@ public class User {
 
     }
 
+
+
     // Getters and setters
     public int getUserId() {
         return userId;

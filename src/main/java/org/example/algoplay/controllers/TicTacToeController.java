@@ -2,17 +2,17 @@ package org.example.algoplay.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import org.example.algoplay.games.ttt.HeuristicAI;
 import org.example.algoplay.games.ttt.RecursiveMoveSelector;
-import org.example.algoplay.models.Difficulty; // Import proper Difficulty enum
+import org.example.algoplay.models.Difficulty;
 import org.example.algoplay.models.TicTacToeBoard;
+import org.example.algoplay.models.User;
 import org.example.algoplay.services.DatabaseService;
-import org.example.algoplay.services.UserSessionService; // Import UserSessionService
+import org.example.algoplay.services.UserSessionService;
 import org.example.algoplay.utils.TimeTracker;
 
 import java.net.URL;
@@ -28,6 +28,11 @@ public class TicTacToeController implements Initializable {
     @FXML private Label playerNameLabel;
     @FXML private Label moveCountLabel;
     @FXML private Button resetButton;
+    @FXML private VBox setupPane;
+    @FXML private HBox gameInfoPane;
+    @FXML private TextField playerNameField;
+    @FXML private ComboBox<String> difficultyComboBox;
+    @FXML private Button startGameButton;
 
     private final int SIZE = 5;
     private Button[][] buttons;
@@ -38,98 +43,38 @@ public class TicTacToeController implements Initializable {
 
     private int playerMoves = 0;
     private int aiMoves = 0;
-    private String playerName;
+    private String playerName = "Guest"; // Default player name
     private boolean isHeuristicAI = true;
     private Difficulty currentDifficulty = Difficulty.MEDIUM;
 
     // DATABASE VARIABLES
-    private int userId;
-    private int gameId;
+    private int userId = -1;
+    private final int gameId = 1; // Fixed gameId as requested
     private int roundId;
     private int moveNumber = 1;
+    private int resultId = -1; // Added to track ttt_game_results
     private final TimeTracker timeTracker = new TimeTracker();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Add difficulty options to dropdown
+        difficultyComboBox.getItems().addAll("EASY", "MEDIUM", "HARD");
+        difficultyComboBox.setValue("MEDIUM"); // Default selection
+
         // Check if user is already logged in via UserSessionService
         if (UserSessionService.getInstance().isLoggedIn()) {
             playerName = UserSessionService.getInstance().getCurrentUser().getUsername();
             userId = UserSessionService.getInstance().getCurrentUserId();
-            playerNameLabel.setText("Player: " + playerName);
-
-            // Create a new game entry
-            gameId = saveGame("Tic Tac Toe 5x5");
+            playerNameField.setText(playerName);
         }
 
-        initializeGame();
-    }
-
-    /**
-     * Set the player name for this game session
-     * @param playerName The name of the player
-     */
-    public void setPlayerName(String playerName) {
-        this.playerName = playerName;
-        playerNameLabel.setText("Player: " + playerName);
-
-        // Save or retrieve user from database
-        try {
-            ResultSet rs = DatabaseService.getInstance().executeQuery(
-                    "SELECT user_id FROM users WHERE username = ?", playerName);
-
-            if (rs != null && rs.next()) {
-                userId = rs.getInt("user_id");
-            } else {
-                // Create new user if not exists
-                saveUser(playerName);
-            }
-            rs.close();
-        } catch (SQLException e) {
-            System.err.println("Error getting user ID: " + e.getMessage());
-        }
-
-        // Create a new game entry
-        gameId = saveGame("Tic Tac Toe 5x5");
-    }
-
-    /**
-     * Set the difficulty level for this game
-     * @param difficultyString The difficulty as a string ("EASY", "MEDIUM", "HARD")
-     */
-    public void setDifficulty(String difficultyString) {
-        try {
-            // Convert string to enum
-            Difficulty difficulty = Difficulty.valueOf(difficultyString.toUpperCase());
-            this.currentDifficulty = difficulty;
-
-            switch (difficulty) {
-                case EASY:
-                    isHeuristicAI = true;
-                    heuristicAI.setDifficulty(Difficulty.EASY);
-                    break;
-                case MEDIUM:
-                    isHeuristicAI = true;
-                    heuristicAI.setDifficulty(Difficulty.MEDIUM);
-                    break;
-                case HARD:
-                    isHeuristicAI = false; // Use RecursiveAI for HARD
-                    break;
-            }
-            difficultyLabel.setText("Difficulty: " + difficultyString);
-        } catch (IllegalArgumentException e) {
-            // Default to MEDIUM if invalid string
-            System.err.println("Invalid difficulty: " + difficultyString);
-            currentDifficulty = Difficulty.MEDIUM;
-            isHeuristicAI = true;
-            heuristicAI.setDifficulty(Difficulty.MEDIUM);
-            difficultyLabel.setText("Difficulty: Medium");
-        }
-    }
-
-    private void initializeGame() {
+        // Initialize board but keep it hidden until Start Game is clicked
         board = new TicTacToeBoard(SIZE);
         buttons = new Button[SIZE][SIZE];
+        createGameGrid();
+    }
 
+    private void createGameGrid() {
         // Clear existing grid
         gameGrid.getChildren().clear();
 
@@ -148,14 +93,132 @@ public class TicTacToeController implements Initializable {
                 gameGrid.add(btn, j, i);
             }
         }
+    }
+
+    @FXML
+    private void startGame() {
+        // Get player name from the text field
+        String enteredName = playerNameField.getText().trim();
+        if (!enteredName.isEmpty()) {
+            playerName = enteredName;
+        } else {
+            playerName = "Guest";
+        }
+
+        // Set player name label
+        playerNameLabel.setText("Player: " + playerName);
+
+        // Get selected difficulty
+        String selectedDifficulty = difficultyComboBox.getValue();
+        setDifficulty(selectedDifficulty);
+
+        // Update user information in database
+        ensureValidUser();
+
+        // Show game elements and hide setup elements
+        setupPane.setVisible(false);
+        gameInfoPane.setVisible(true);
+        statusLabel.setVisible(true);
+        gameGrid.setVisible(true);
+        moveCountLabel.setVisible(true);
 
         // Reset game state
+        resetGameState();
+    }
+
+    private void resetGameState() {
+        board.clearBoard();
+
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                buttons[i][j].setText("");
+                buttons[i][j].setStyle("");
+                buttons[i][j].setDisable(false);
+            }
+        }
+
         playerTurn = true;
         playerMoves = 0;
         aiMoves = 0;
         moveNumber = 1;
+        resultId = -1; // Reset the resultId for new game
         updateMoveCountLabel();
         statusLabel.setText("Your turn");
+    }
+
+    /**
+     * Ensures there is a valid user ID available
+     */
+    private void ensureValidUser() {
+        if (userId <= 0) {
+            // First check if user exists
+            try {
+                ResultSet rs = DatabaseService.getInstance().executeQuery(
+                        "SELECT user_id FROM users WHERE username = ?", playerName);
+
+                if (rs != null && rs.next()) {
+                    userId = rs.getInt("user_id");
+                    rs.close();
+                } else if (rs != null) {
+                    rs.close();
+                    // Create new user if not exists
+                    userId = saveUser(playerName);
+
+                    // Update UserSessionService if user is created
+                    if (userId > 0) {
+                        User user = new User(userId, playerName);
+                        UserSessionService.getInstance().setCurrentUser(user);
+                    }
+                }
+            } catch (SQLException e) {
+                System.err.println("Error checking user: " + e.getMessage());
+                // Create user as fallback
+                userId = saveUser(playerName);
+
+                // Update UserSessionService if user is created
+                if (userId > 0) {
+                    User user = new User(userId, playerName);
+                    UserSessionService.getInstance().setCurrentUser(user);
+                }
+            }
+        }
+    }
+
+    /**
+     * Set the difficulty level for this game
+     * @param difficultyString The difficulty as a string ("EASY", "MEDIUM", "HARD")
+     */
+    public void setDifficulty(String difficultyString) {
+        try {
+            // Convert string to enum
+            Difficulty difficulty = Difficulty.valueOf(difficultyString.toUpperCase());
+            this.currentDifficulty = difficulty;
+
+            // Set difficulty for both AI implementations
+            heuristicAI.setDifficulty(difficulty);
+            recursiveAI.setDifficulty(difficulty);
+
+            switch (difficulty) {
+                case EASY:
+                    isHeuristicAI = true;
+                    break;
+                case MEDIUM:
+                    isHeuristicAI = true;
+                    break;
+                case HARD:
+                    isHeuristicAI = false; // Use RecursiveAI for HARD
+                    break;
+            }
+            difficultyLabel.setText("Difficulty: " + difficultyString);
+        } catch (IllegalArgumentException e) {
+            // Default to MEDIUM if invalid string
+            System.err.println("Invalid difficulty: " + difficultyString);
+            currentDifficulty = Difficulty.MEDIUM;
+            isHeuristicAI = true;
+            heuristicAI.setDifficulty(Difficulty.MEDIUM);
+            recursiveAI.setDifficulty(Difficulty.MEDIUM);
+            difficultyLabel.setText("Difficulty: Medium");
+        }
     }
 
     private void handleCellClick(int row, int col, Button btn) {
@@ -207,9 +270,10 @@ public class TicTacToeController implements Initializable {
                 aiMoves++;
                 updateMoveCountLabel();
 
-                // Save algorithm performance
-                if (roundId != 0) {
-                    saveAlgorithmPerformance(gameId, roundId, algorithmName, executionTime, moveNumber++);
+                // Save algorithm performance if we have a valid resultId
+                if (resultId > 0) {
+                    saveAlgorithmPerformance(resultId, algorithmName, executionTime, moveNumber);
+                    moveNumber++;
                 }
 
                 if (board.checkWin('O')) {
@@ -250,8 +314,43 @@ public class TicTacToeController implements Initializable {
         statusLabel.setText(message);
         disableBoard();
 
-        // Save game round result
-        roundId = saveGameRound(gameId, userId, result);
+        // Ensure we have a valid user before saving the game round
+        ensureValidUser();
+
+        // Only save if we have a valid user
+        if (userId > 0) {
+            // Save to ttt_game_results first to get a resultId
+            resultId = saveTTTGameResult(userId, playerName, currentDifficulty.name(), result, playerMoves, aiMoves);
+
+            if (resultId <= 0) {
+                System.err.println("Failed to save to ttt_game_results. User ID: " + userId);
+            } else {
+                System.out.println("Game result saved successfully with ID: " + resultId);
+
+                // Now save to the standard game_rounds table too
+                boolean isCorrect = "win".equals(result);
+                int score = "win".equals(result) ? 100 : ("draw".equals(result) ? 50 : 0);
+
+                roundId = saveGameRound(gameId, userId, isCorrect, score);
+
+                if (roundId <= 0) {
+                    System.err.println("Failed to save to game_rounds. User ID: " + userId + ", Game ID: " + gameId);
+                } else {
+                    System.out.println("Game round saved successfully with ID: " + roundId);
+
+                    // Save to tictactoe_rounds with the generated roundId
+                    boolean tttRoundSuccess = saveTicTacToeRound(roundId, gameId, userId, result, currentDifficulty.name());
+
+                    if (!tttRoundSuccess) {
+                        System.err.println("Failed to save to tictactoe_rounds. Round ID: " + roundId);
+                    } else {
+                        System.out.println("TicTacToe round saved successfully");
+                    }
+                }
+            }
+        } else {
+            System.err.println("Cannot save game round: Invalid user ID");
+        }
     }
 
     private void highlightBoard(String color) {
@@ -276,7 +375,15 @@ public class TicTacToeController implements Initializable {
 
     @FXML
     private void resetGame() {
-        initializeGame();
+        // Show setup panel and hide game elements
+        setupPane.setVisible(true);
+        gameInfoPane.setVisible(false);
+        statusLabel.setVisible(false);
+        gameGrid.setVisible(false);
+        moveCountLabel.setVisible(false);
+
+        // Reset game state
+        resetGameState();
     }
 
     private boolean checkDraw() {
@@ -290,14 +397,23 @@ public class TicTacToeController implements Initializable {
     // Database methods adapted to use DatabaseService
     private int saveUser(String username) {
         try {
+            if (username == null || username.trim().isEmpty()) {
+                username = "Guest"; // Fallback to Guest if username is empty
+            }
+
+            System.out.println("Creating new user: " + username);
+
             ResultSet rs = DatabaseService.getInstance().executeQuery(
                     "INSERT INTO users (username, password) VALUES (?, 'default') RETURNING user_id",
                     username);
 
             if (rs != null && rs.next()) {
-                userId = rs.getInt(1);
+                int newUserId = rs.getInt(1);
                 rs.close();
-                return userId;
+                System.out.println("Successfully created user with ID: " + newUserId);
+                return newUserId;
+            } else if (rs != null) {
+                rs.close();
             }
         } catch (SQLException e) {
             System.err.println("Error saving user: " + e.getMessage());
@@ -305,34 +421,59 @@ public class TicTacToeController implements Initializable {
         return -1;
     }
 
-    private int saveGame(String gameName) {
+    /**
+     * Save game result to the ttt_game_results table
+     */
+    private int saveTTTGameResult(int userId, String playerName, String difficulty, String result, int playerMoves, int aiMoves) {
         try {
+            // Check for valid inputs
+            if (userId <= 0 || playerName == null || difficulty == null || result == null) {
+                System.err.println("Invalid parameters for saving TTT game result");
+                return -1;
+            }
+
             ResultSet rs = DatabaseService.getInstance().executeQuery(
-                    "INSERT INTO games (game_name) VALUES (?) RETURNING game_id",
-                    gameName);
+                    "INSERT INTO ttt_game_results (user_id, player_name, difficulty, result, player_moves, ai_moves) " +
+                            "VALUES (?, ?, ?, ?, ?, ?) RETURNING result_id",
+                    userId, playerName, difficulty, result, playerMoves, aiMoves);
 
             if (rs != null && rs.next()) {
-                int id = rs.getInt(1);
+                int newResultId = rs.getInt(1);
                 rs.close();
-                return id;
+                System.out.println("Successfully saved TTT game result with ID: " + newResultId);
+                return newResultId;
+            } else if (rs != null) {
+                rs.close();
             }
         } catch (SQLException e) {
-            System.err.println("Error saving game: " + e.getMessage());
+            System.err.println("Error saving TTT game result: " + e.getMessage());
         }
         return -1;
     }
 
-    private int saveGameRound(int gameId, int userId, String result) {
+    private int saveGameRound(int gameId, int userId, boolean isCorrect, int score) {
         try {
-            ResultSet rs = DatabaseService.getInstance().executeQuery(
-                    "INSERT INTO game_rounds (game_id, user_id, result, created_at) " +
-                            "VALUES (?, ?, ?, CURRENT_TIMESTAMP) RETURNING round_id",
-                    gameId, userId, result);
+            // Extra check to ensure valid userId and gameId
+            if (userId <= 0 || gameId <= 0) {
+                System.err.println("Cannot save game round: Invalid IDs. User ID: " + userId + ", Game ID: " + gameId);
+                return -1;
+            }
 
-            if (rs != null && rs.next()) {
-                int id = rs.getInt(1);
-                rs.close();
-                return id;
+            System.out.println("Saving game round with User ID: " + userId + ", Game ID: " + gameId);
+
+            ResultSet gameRoundRs = DatabaseService.getInstance().executeQuery(
+                    "INSERT INTO game_rounds (game_id, user_id, is_correct, score) " +
+                            "VALUES (?, ?, ?, ?) RETURNING round_id",
+                    gameId, userId, isCorrect, score);
+
+            int gameRoundId = -1;
+            if (gameRoundRs != null && gameRoundRs.next()) {
+                gameRoundId = gameRoundRs.getInt(1);
+                gameRoundRs.close();
+                System.out.println("Successfully inserted into game_rounds with ID: " + gameRoundId);
+                return gameRoundId;
+            } else if (gameRoundRs != null) {
+                gameRoundRs.close();
             }
         } catch (SQLException e) {
             System.err.println("Error saving game round: " + e.getMessage());
@@ -340,11 +481,61 @@ public class TicTacToeController implements Initializable {
         return -1;
     }
 
-    private void saveAlgorithmPerformance(int gameId, int roundId, String algorithmName,
-                                          long executionTime, int moveNumber) {
-        DatabaseService.getInstance().executeUpdate(
-                "INSERT INTO algorithm_performance (game_id, round_id, algorithm_name, " +
-                        "execution_time, move_number, created_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
-                gameId, roundId, algorithmName, executionTime, moveNumber);
+    /**
+     * Save data to tictactoe_rounds table
+     */
+    private boolean saveTicTacToeRound(int roundId, int gameId, int userId, String result, String difficulty) {
+        try {
+            // First check if a record with this round_id already exists
+            ResultSet checkRs = DatabaseService.getInstance().executeQuery(
+                    "SELECT 1 FROM tictactoe_rounds WHERE round_id = ?",
+                    roundId);
+
+            boolean recordExists = checkRs != null && checkRs.next();
+            if (checkRs != null) {
+                checkRs.close();
+            }
+
+            // If record already exists, return true without trying to insert
+            if (recordExists) {
+                System.out.println("tictactoe_rounds record already exists for round_id=" + roundId + ", skipping insertion");
+                return true;
+            }
+
+            // Otherwise, proceed with insertion
+            DatabaseService.getInstance().executeUpdate(
+                    "INSERT INTO tictactoe_rounds (round_id, game_id, user_id, result, difficulty) " +
+                            "VALUES (?, ?, ?, ?, ?)",
+                    roundId, gameId, userId, result, difficulty);
+
+            System.out.println("Successfully inserted into tictactoe_rounds table with round_id=" + roundId);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error inserting into tictactoe_rounds: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Saves the algorithm performance data to the database
+     * @param resultId The result ID from ttt_game_results table
+     * @param algorithmName The name of the algorithm used
+     * @param executionTime The execution time in milliseconds
+     * @param moveNumber The move number in the game
+     */
+    private void saveAlgorithmPerformance(int resultId, String algorithmName, long executionTime, int moveNumber) {
+        String insertQuery = "INSERT INTO ttt_algorithm_performance (result_id, algorithm_name, execution_time, move_number) " +
+                "VALUES (?, ?, ?, ?)";
+
+        try {
+            DatabaseService.getInstance().executeUpdate(insertQuery,
+                    resultId,
+                    algorithmName,
+                    executionTime,
+                    moveNumber);
+            System.out.println("Algorithm performance saved: " + algorithmName + ", Time: " + executionTime + "ms, Move: " + moveNumber);
+        } catch (Exception e) {
+            System.err.println("Failed to save algorithm performance: " + e.getMessage());
+        }
     }
 }

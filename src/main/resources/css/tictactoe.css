@@ -69,3 +69,78 @@
 #gameGrid Button:hover {
     -fx-background-color: #ecf0f1;
 }
+
+/* Setup Screen Styles */
+.title-text {
+    -fx-fill: #2c3e50;
+    -fx-font-weight: bold;
+}
+
+.input-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #34495e;
+}
+
+/* Difficulty Buttons */
+.difficulty-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-min-width: 80px;
+    -fx-padding: 8px 15px;
+    -fx-background-radius: 5px;
+}
+
+.difficulty-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.selected-button {
+    -fx-background-color: #2c3e50;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);
+}
+
+/* Start Button */
+.start-button {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-min-width: 120px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+}
+
+.start-button:hover {
+    -fx-background-color: #27ae60;
+}
+
+/* Setup Screen Specific Styles */
+.input-section {
+    -fx-padding: 0 0 10px 0;
+}
+
+.difficulty-section {
+    -fx-padding: 10px 0;
+}
+
+.name-field {
+    -fx-pref-width: 300px;
+    -fx-font-size: 14px;
+}
+
+.error-message {
+    -fx-text-fill: #d9534f;
+    -fx-font-size: 12px;
+    -fx-padding: 5px 0 0 0;
+}
+
+/* Enhanced button states */
+.difficulty-button:selected {
+    -fx-background-color: #2c3e50;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 1);
+}
+
+.start-button {
+    -fx-pref-width: 200px;
+    -fx-pref-height: 40px;
+}
