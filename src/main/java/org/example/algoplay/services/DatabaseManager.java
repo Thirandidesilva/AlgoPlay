@@ -21,6 +21,7 @@ public class DatabaseManager {
                     "id SERIAL PRIMARY KEY, " +
                     "game_id INTEGER DEFAULT 5 REFERENCES games(game_id) ON DELETE CASCADE, " +
                     "user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE, " +
+                    "username VARCHAR(100) NOT NULL, " +
                     "algorithm VARCHAR(50) NOT NULL, " +
                     "start_position VARCHAR(10) NOT NULL, " +
                     "solution_path TEXT NOT NULL, " +
@@ -62,16 +63,42 @@ public class DatabaseManager {
             return;
         }
 
-        String sql = "INSERT INTO knight_tour_solutions (game_id, user_id, algorithm, start_position, solution_path, execution_time) " +
-                "VALUES (5, ?, ?, ?, ?, ?)";
+        // Get username directly from users table
+        String username = getUsernameFromId(userId);
+        if (username == null) {
+            System.err.println("Cannot save solution: Unable to retrieve username");
+            return;
+        }
 
-        boolean success = dbService.executeUpdate(sql, userId, algorithm, startPosition, solutionPath, executionTime);
+        String sql = "INSERT INTO knight_tour_solutions (game_id, user_id, username, algorithm, start_position, solution_path, execution_time) " +
+                "VALUES (5, ?, ?, ?, ?, ?, ?)";
+
+        boolean success = dbService.executeUpdate(sql, userId, username, algorithm, startPosition, solutionPath, executionTime);
 
         if (success) {
-            System.out.println("Solution saved successfully");
+            System.out.println("Solution saved successfully for user: " + username);
         } else {
             System.err.println("Failed to save solution");
         }
+    }
+
+    /**
+     * Get username from user ID by querying the users table
+     */
+    private String getUsernameFromId(int userId) {
+        String sql = "SELECT username FROM users WHERE user_id = ?";
+        String username = null;
+
+        try (ResultSet rs = dbService.executeQuery(sql, userId)) {
+            if (rs != null && rs.next()) {
+                username = rs.getString("username");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving username: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return username;
     }
 
     /**
@@ -79,9 +106,8 @@ public class DatabaseManager {
      */
     public List<SolutionRecord> getAllSolutions() {
         List<SolutionRecord> solutions = new ArrayList<>();
-        String sql = "SELECT ks.*, u.username FROM knight_tour_solutions ks " +
-                "JOIN users u ON ks.user_id = u.user_id " +
-                "ORDER BY ks.created_at DESC";
+        String sql = "SELECT * FROM knight_tour_solutions " +
+                "ORDER BY created_at DESC";
 
         try (ResultSet rs = dbService.executeQuery(sql)) {
             if (rs != null) {
@@ -165,9 +191,8 @@ public class DatabaseManager {
             return solutions;
         }
 
-        String sql = "SELECT ks.*, u.username FROM knight_tour_solutions ks " +
-                "JOIN users u ON ks.user_id = u.user_id " +
-                "WHERE ks.user_id = ? ORDER BY ks.created_at DESC";
+        String sql = "SELECT * FROM knight_tour_solutions " +
+                "WHERE user_id = ? ORDER BY created_at DESC";
 
         try (ResultSet rs = dbService.executeQuery(sql, userId)) {
             if (rs != null) {

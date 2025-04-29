@@ -197,7 +197,7 @@ public class KTController {
         int attempts = 0;
         Random random = new Random();
 
-        while (!solutionFound && attempts < 100) { // You can adjust the attempt limit if needed
+        while (!solutionFound && attempts < 100) { // Can adjust the attempt limit if needed
             attempts++;
             int startX = random.nextInt(BOARD_SIZE);
             int startY = random.nextInt(BOARD_SIZE);
