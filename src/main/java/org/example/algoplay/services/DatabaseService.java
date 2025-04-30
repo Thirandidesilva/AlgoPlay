@@ -10,7 +10,8 @@ import java.sql.Statement;
 public class DatabaseService {
     private static final String URL = "jdbc:postgresql://localhost:5432/AlgoPlay";
     private static final String USER = "postgres";
-    private static final String PASSWORD = "Thiya@2003";
+
+    private static final String PASSWORD = "Kavi@123";
 
     private Connection connection;
 
