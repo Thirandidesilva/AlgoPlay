@@ -51,6 +51,15 @@ CREATE TABLE hanoi_algorithm_performance (
     move_sequence TEXT
 );
 
+-- Add games to DataBase table
+INSERT INTO games (game_id, game_name) VALUES
+(1, 'Tic-Tac-Toe'),
+(2, 'Tower-Of-Hanoi'),
+(3, 'Traveling Salesman Problem'),
+(4, 'Eight Queens Puzzle'),
+(5, 'Knights Tour Problem');
+
+-- TICTACTOE_ROUNDS table
 CREATE TABLE tictactoe_rounds (
     round_id SERIAL PRIMARY KEY,
     game_id INTEGER REFERENCES games(game_id),
@@ -60,27 +69,19 @@ CREATE TABLE tictactoe_rounds (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO games (game_name)
-VALUES
-    ('Tic-Tac-Toe'),
-    ('Tower-Of-Hanoi'),
-    ('Traveling Salesman Problem'),
-    ('Eight Queens Puzzle'),
-    ('Knights Tour Problem');
-
-
+-- TTT_GAME_RESULTS table
 CREATE TABLE ttt_game_results (
     result_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id),
     player_name VARCHAR(50) NOT NULL,
-    difficulty VARCHAR(10) NOT NULL, -- 'EASY', 'MEDIUM', 'HARD'
-    result VARCHAR(10) NOT NULL, -- 'win', 'loss', 'draw'
+    difficulty VARCHAR(10) NOT NULL,
+    result VARCHAR(10) NOT NULL,
     player_moves INTEGER NOT NULL,
     ai_moves INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
+-- TTT_ALGORITHM_PERFORMANCE table
 CREATE TABLE ttt_algorithm_performance (
     perf_id SERIAL PRIMARY KEY,
     result_id INTEGER REFERENCES ttt_game_results(result_id) ON DELETE CASCADE,
@@ -90,7 +91,7 @@ CREATE TABLE ttt_algorithm_performance (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
---KNIGHT_TOUR_SOLUTION table
+-- KNIGHT_TOUR_SOLUTIONS table
 CREATE TABLE IF NOT EXISTS knight_tour_solutions (
     id SERIAL PRIMARY KEY,
     game_id INTEGER DEFAULT 5 REFERENCES games(game_id) ON DELETE CASCADE,

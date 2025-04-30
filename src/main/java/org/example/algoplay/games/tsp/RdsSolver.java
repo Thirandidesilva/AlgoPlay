@@ -35,7 +35,7 @@ public class RdsSolver implements TspSolver {
     private static final int MAX_DEPTH = 9;       // Depth limit to avoid stack explosion
     private static final int MAX_DREAMS = 5;      // Only explore top 5 dreams per level
 
-    private List<Integer> dreamSearch(List<Integer> currentPath, List<Integer> remaining) {
+    protected List<Integer> dreamSearch(List<Integer> currentPath, List<Integer> remaining) {
         // Stop if we've explored all cities or hit max depth
         if (remaining.isEmpty() || currentPath.size() >= MAX_DEPTH) {
             return new ArrayList<>(currentPath);
