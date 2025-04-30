@@ -50,7 +50,7 @@ public class FourPegHanoiSolver {
     }
 
     // Find optimal k for Frame-Stewart algorithm
-    private int findOptimalK(int n) {
+    public int findOptimalK(int n) {
         // This is a heuristic approach; the exact value is complex to compute
         return (int) Math.sqrt(n);
     }

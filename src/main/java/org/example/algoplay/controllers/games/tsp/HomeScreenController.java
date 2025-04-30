@@ -1,11 +1,12 @@
 package org.example.algoplay.controllers.games.tsp;
 
-import javafx.animation.FadeTransition;
+import  javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
@@ -20,6 +21,7 @@ import javafx.util.Duration;
 
 import org.example.algoplay.view.MvMPage;
 import org.example.algoplay.view.PvMPage;
+import org.example.algoplay.view.TspSessionView;
 
 
 import java.io.IOException;
@@ -32,6 +34,7 @@ public class HomeScreenController implements Initializable {
 
     private static final Color PRIMARY_COLOR = Color.rgb(73, 255, 73); // Bright green
     private static final Color SECONDARY_COLOR = Color.rgb(30, 144, 255); // Dodger blue
+
 
     @FXML private StackPane root;
     @FXML private BorderPane mainContent;
@@ -51,6 +54,10 @@ public class HomeScreenController implements Initializable {
     @FXML private Button mvmStartButton;
     @FXML private Label infoTitle;
     @FXML private Text infoText;
+    @FXML
+    private Button tspSessionButton; // Add this button declaration at the top with your other @FXML elements
+
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -72,6 +79,7 @@ public class HomeScreenController implements Initializable {
         fadeIn.play();
     }
 
+    @FXML
     private void applyStyles() {
         // Style top bar
         HBox topBar = (HBox) mainContent.getTop();
@@ -98,6 +106,7 @@ public class HomeScreenController implements Initializable {
         styleActionButton(logoutButton);
         styleActionButton(pvmStartButton);
         styleActionButton(mvmStartButton);
+        styleActionButton(tspSessionButton); // Add this line to style the TSP Session button
 
         // Style title
         titleLabel.setFill(PRIMARY_COLOR);
@@ -121,7 +130,6 @@ public class HomeScreenController implements Initializable {
         infoTitle.setTextFill(PRIMARY_COLOR);
         infoText.setFill(Color.LIGHTGRAY);
     }
-
     private void styleNavButton(Button button) {
         button.setTextFill(Color.LIGHTGRAY);
         button.setBackground(Background.EMPTY);
@@ -180,6 +188,32 @@ public class HomeScreenController implements Initializable {
                     "-fx-border-radius: 20; " +
                     "-fx-text-fill: white;");
         });
+    }
+
+    @FXML
+    private void handleTspSessionButton() {
+        try {
+            // Create the controller for the TSP sessions
+            org.example.algoplay.controllers.games.tsp.TspSessionController tspSessionController = new org.example.algoplay.controllers.games.tsp.TspSessionController();
+
+            // Create the view using the controller
+            TspSessionView tspSessionView = new TspSessionView(tspSessionController);
+
+            // Create and configure a new stage
+            Stage tspStage = new Stage();
+            tspStage.setTitle("TSP Session Results");
+
+            // Create a scene with your view and apply similar styling to your other windows
+            Scene scene = new Scene(tspSessionView, 1000, 700);
+            tspStage.setScene(scene);
+
+            // Show the stage
+            tspStage.show();
+
+        } catch (Exception e) {
+            System.err.println("Failed to load TSP Session view");
+            e.printStackTrace();
+        }
     }
 
     private void styleModeCard(VBox card) {

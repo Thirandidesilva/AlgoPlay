@@ -11,10 +11,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.example.algoplay.controllers.MainMenuController;
 import org.example.algoplay.models.BacktrackingKnightTour;
 import org.example.algoplay.models.WarnsdorffKnightTour;
 import org.example.algoplay.services.DatabaseManager;
 import org.example.algoplay.services.UserSessionService;
+import org.example.algoplay.controllers.KTDataViewController;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -30,6 +32,8 @@ public class KTController {
     @FXML private Label movesCountLabel;
     @FXML private Label timeLabel;
     @FXML private Button undoButton;
+    @FXML private Button backToGameButton;
+    @FXML private Button dataViewButton;
 
     private final int BOARD_SIZE = 5;
     private Rectangle[][] boardSquares;
@@ -44,23 +48,14 @@ public class KTController {
     private List<Point> playerMoves = new ArrayList<>();
     private boolean gameInProgress = false;
     private long startTime; // Track when the game started
-
-    // For hint functionality
-    private Point hintPosition = null;
-
-    // Add this to track if backtracking is active
-    private boolean backtrackingEnabled = false;
-
-    // Pre-calculated complete tour for hints
-    private List<Point> completeTourPath = null;
-
-    // Model instances
-    private BacktrackingKnightTour backtrackingModel;
-    private WarnsdorffKnightTour warnsdorffModel;
+    private Point hintPosition = null; // For hint functionality
+    private boolean backtrackingEnabled = false; // Add this to track if backtracking is active
+    private List<Point> completeTourPath = null; // Pre-calculated complete tour for hints
+    private BacktrackingKnightTour backtrackingModel; // Model instances
+    private WarnsdorffKnightTour warnsdorffModel; // Model instances
 
     // Initialize method with exception handling
-    @FXML
-    public void initialize() {
+    @FXML public void initialize() {
         try {
             algorithmComboBox.getItems().addAll("Backtracking", "Warnsdorff");
             algorithmComboBox.setValue("Warnsdorff");
@@ -135,34 +130,26 @@ public class KTController {
         }
     }
 
-    @FXML
-    private void startGame() {
+
+    @FXML private void startGame() {
         // Check if user is logged in
         if (!userSessionService.isLoggedIn()) {
             showAlert("Error", "You must be logged in to play");
             return;
         }
 
-        // Enable or disable backtracking based on algorithm choice
-        backtrackingEnabled = "Backtracking".equals(algorithmComboBox.getValue());
+        backtrackingEnabled = "Backtracking".equals(algorithmComboBox.getValue()); // Enable or disable backtracking based on algorithm choice
 
-        // Enable/disable undo button based on algorithm
-        undoButton.setDisable(!backtrackingEnabled);
+        undoButton.setDisable(!backtrackingEnabled); // Enable/disable undo button based on algorithm
 
-        // Reset any previous game state
-        resetGame();
+        resetGame(); // Reset any previous game state
 
-        // Disable algorithm selection after game starts
         algorithmComboBox.setDisable(true);
+        gameInProgress = true; // Enable game in progress flag
 
-        // Enable game in progress flag
-        gameInProgress = true;
+        startTime = System.currentTimeMillis(); // Record start time
 
-        // Record start time
-        startTime = System.currentTimeMillis();
-
-        // Find a starting position that guarantees a solution
-        findSuitableStartingPosition();
+        findSuitableStartingPosition(); // Record start time
 
         // Initialize player moves list
         playerMoves = new ArrayList<>();
@@ -172,22 +159,19 @@ public class KTController {
 
         resetChessBoard();
 
-        // Mark starting position with blue and place a knight symbol
-        Rectangle startSquare = new Rectangle(70, 70);
+        Rectangle startSquare = new Rectangle(70, 70); // Mark starting position with blue and place a knight symbol
         startSquare.setFill(Color.CORNFLOWERBLUE);
 
         Text knightText = new Text("♞"); // Unicode knight chess symbol
         knightText.setStyle("-fx-font-size: 24;");
 
-        // Update the UI with the knight at starting position
-        updateChessBoardCell(startingPosition.x, startingPosition.y, startSquare, knightText);
+        updateChessBoardCell(startingPosition.x, startingPosition.y, startSquare, knightText); // Update the UI with the knight at starting position
 
         startPositionLabel.setText("Starting Position: (" + startingPosition.x + "," + startingPosition.y + ")");
         statusLabel.setText("Game Start! Click on valid squares to move the knight.");
         movesCountLabel.setText("Moves: " + moveCount);
 
-        // Show valid moves from starting position
-        highlightValidMoves(startingPosition.x, startingPosition.y);
+        highlightValidMoves(startingPosition.x, startingPosition.y); // Show valid moves from starting position
     }
 
     // Find a truly random starting position that guarantees a solution
@@ -309,7 +293,6 @@ public class KTController {
     }
 
     private void handleSquareClick(int row, int col) {
-
         // Check if user is logged in
         if (!userSessionService.isLoggedIn()) {
             showAlert("Error", "You must be logged in to play");
@@ -329,18 +312,15 @@ public class KTController {
             new Alert(Alert.AlertType.ERROR, "Invalid move! Knights move in an L-shape.").showAndWait();
             return;
         }
-
         // Check if the square has been visited before
         if (hasVisited(row, col)) {
             statusLabel.setText("Square already visited! Try another move.");
             return;
         }
-
         // Clear previous hint if any
         if (hintPosition != null) {
             clearHint();
         }
-
         // Valid move, update game state
         moveCount++;
         currentPosition = new Point(row, col);
@@ -357,14 +337,11 @@ public class KTController {
         knightText.setStyle("-fx-font-size: 24;");
         updateChessBoardCell(row, col, knightSquare, knightText);
 
-        // Update labels
-        movesCountLabel.setText("Moves: " + moveCount);
+        movesCountLabel.setText("Moves: " + moveCount); // Update labels
 
-        // Highlight valid moves from the new position
-        highlightValidMoves(row, col);
+        highlightValidMoves(row, col); // Highlight valid moves from the new position
 
-        // Check if the game is complete
-        checkGameCompletion();
+        checkGameCompletion(); // Check if the game is complete
     }
 
     private boolean isValidKnightMove(int fromX, int fromY, int toX, int toY) {
@@ -397,8 +374,7 @@ public class KTController {
             final int c = move.y;
             stackPane.setOnMouseClicked(e -> handleSquareClick(r, c));
 
-            // Add to the board
-            chessBoard.add(stackPane, move.y, move.x);
+            chessBoard.add(stackPane, move.y, move.x); // Add to the board
         }
     }
 
@@ -459,49 +435,15 @@ public class KTController {
         }
     }
 
-    private void checkGameCompletion() {
-        // Game is complete if all squares are visited
-        if (playerMoves.size() == BOARD_SIZE * BOARD_SIZE) {
-            gameInProgress = false;
-            statusLabel.setText("Congratulations! You've completed the Knight's Tour!");
 
-            // Show victory popup
-            showAlert("Victory!", "Congratulations! You've completed the Knight's Tour in " + moveCount + " moves and " + (System.currentTimeMillis() - startTime) + "ms!");
-
-            // Save to database
-            saveGameToDatabase();
-
-            // Allow starting a new game
-            algorithmComboBox.setDisable(false);
-            undoButton.setDisable(true);
-        } else {
-            // Check if there are any valid moves left
-            List<Point> validMoves = getValidKnightMoves(currentPosition.x, currentPosition.y);
-            if (validMoves.isEmpty()) {
-                if (backtrackingEnabled && playerMoves.size() > 1) {
-                    statusLabel.setText("No more valid moves! You can backtrack using the Undo button.");
-                    // Keep undo button enabled for backtracking
-                    undoButton.setDisable(false);
-                } else {
-                    gameInProgress = false;
-                    statusLabel.setText("No more valid moves! Game Over.");
-
-                    // Show dead end popup
-                    showAlert("Game Over", "No more valid moves available! You've reached a dead end with " + moveCount + " moves.");
-
-                    // Allow starting a new game
-                    algorithmComboBox.setDisable(false);
-                    undoButton.setDisable(true);
-                }
-            } else {
-                // Valid moves exist, make sure undo is enabled if backtracking is allowed
-                undoButton.setDisable(!backtrackingEnabled);
-            }
-        }
-    }
-
-    private void saveGameToDatabase() {
+    //Saves game results to database with specified status
+    private void saveGameToDatabase(String gameStatus) {
         String algorithm = algorithmComboBox.getValue();
+
+        if ("INCOMPLETE".equals(gameStatus)) { //In the algorithm column in display incomplete if is it
+            algorithm = algorithm + " (Incomplete)";
+        }
+
         String startPosition = startingPosition.x + "," + startingPosition.y;
 
         // Format solution path as string in the format expected by DatabaseManager
@@ -523,11 +465,81 @@ public class KTController {
 
         // Database exception handling
         try {
-            // Save to database
+            // Save to database with status
             dbManager.saveSolution(algorithm, startPosition, solutionPath, executionTime);
         } catch (Exception e) {
             showAlert("Error", "An unexpected error occurred while saving results: " + e.getMessage());
             System.err.println("Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    //Original method that now calls the method with status parameter
+    private void saveGameToDatabase() {
+        // Call the overloaded method with COMPLETED status
+        saveGameToDatabase("COMPLETED");
+    }
+
+    //Modified checkGameCompletion method to save dead end games
+    private void checkGameCompletion() {
+        // Game is complete if all squares are visited
+        if (playerMoves.size() == BOARD_SIZE * BOARD_SIZE) {
+            gameInProgress = false;
+            statusLabel.setText("Congratulations! You've completed the Knight's Tour!");
+
+            showAlert("Victory!", "Congratulations! You've completed the Knight's Tour in " + moveCount + " moves and " + (System.currentTimeMillis() - startTime) + "ms!");
+
+            saveGameToDatabase("COMPLETED");// Save to database as completed
+
+            // Allow starting a new game
+            algorithmComboBox.setDisable(false);
+            undoButton.setDisable(true);
+        } else {
+            // Check if there are any valid moves left
+            List<Point> validMoves = getValidKnightMoves(currentPosition.x, currentPosition.y);
+            if (validMoves.isEmpty()) {
+                if (backtrackingEnabled && playerMoves.size() > 1) {
+                    statusLabel.setText("No more valid moves! You can backtrack using the Undo button.");
+
+                    undoButton.setDisable(false); // Keep undo button enabled for backtracking
+                } else {
+                    gameInProgress = false;
+                    statusLabel.setText("No more valid moves! Game Over.");
+
+                    // Show dead end popup
+                    showAlert("Game Over", "No more valid moves available! You've reached a dead end with " + moveCount + " moves.");
+
+                    saveGameToDatabase("INCOMPLETE");
+
+                    // Allow starting a new game
+                    algorithmComboBox.setDisable(false);
+                    undoButton.setDisable(true);
+                }
+            } else {
+                // Valid moves exist, make sure undo is enabled if backtracking is allowed
+                undoButton.setDisable(!backtrackingEnabled);
+            }
+        }
+    }
+
+    @FXML
+    private void backToGame() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainMenu.fxml"));
+            Parent root = loader.load();
+
+            // Get the controller but don't set the user - it will get it from the session
+            MainMenuController mainMenuController = loader.getController();
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+
+            Stage stage = (Stage) backToGameButton.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("AlgoPlay");
+
+        } catch (IOException e) {
+            System.err.println("Error returning to main menu: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -538,18 +550,14 @@ public class KTController {
             return;
         }
 
-        // Remove the last move
-        playerMoves.remove(playerMoves.size() - 1);
+        playerMoves.remove(playerMoves.size() - 1); // Remove the last move
 
-        // Update current position to the previous position
-        currentPosition = playerMoves.get(playerMoves.size() - 1);
+        currentPosition = playerMoves.get(playerMoves.size() - 1); // Update current position to the previous position
 
-        // Decrement move counter
         moveCount--;
 
-        // Update UI
         resetChessBoard();
-        drawVisitedPath();
+        drawVisitedPath(); // Remove the last move
 
         // Place knight at current position
         Rectangle knightSquare = new Rectangle(70, 70);
@@ -562,8 +570,7 @@ public class KTController {
         movesCountLabel.setText("Moves: " + moveCount);
         statusLabel.setText("Move undone. Try a different path.");
 
-        // Highlight valid moves from new position
-        highlightValidMoves(currentPosition.x, currentPosition.y);
+        highlightValidMoves(currentPosition.x, currentPosition.y); // Highlight valid moves from new position
     }
 
 
@@ -580,7 +587,6 @@ public class KTController {
         movesCountLabel.setText("Moves: 0");
         timeLabel.setText("");
 
-        // Allow editing player name and algorithm
         algorithmComboBox.setDisable(false);
         undoButton.setDisable(true);
     }
@@ -591,13 +597,11 @@ public class KTController {
             return;
         }
 
-        // Clear previous hint if any
         if (hintPosition != null) {
-            clearHint();
+            clearHint(); // Clear previous hint if any
         }
 
-        // Find next optimal move in the completeTourPath
-        hintPosition = findNextOptimalMove();
+        hintPosition = findNextOptimalMove(); // Find next optimal move in the completeTourPath
 
         if (hintPosition != null) {
             // Display hint
@@ -630,7 +634,6 @@ public class KTController {
             // If no pre-calculated path, use the model to find a good move
             return getBestMoveFromModels();
         }
-
         // First, verify that the player's moves so far match part of the completeTourPath
         boolean pathMatch = true;
         for (int i = 0; i < playerMoves.size(); i++) {
@@ -698,9 +701,9 @@ public class KTController {
     }
 
     private void clearHint() {
-        // Redraw the board without changing position
+
         resetChessBoard();
-        drawVisitedPath();
+        drawVisitedPath(); // Redraw the board without changing position
 
         // Place the knight at the current position
         Rectangle knightSquare = new Rectangle(70, 70);
@@ -709,8 +712,7 @@ public class KTController {
         knightText.setStyle("-fx-font-size: 24;");
         updateChessBoardCell(currentPosition.x, currentPosition.y, knightSquare, knightText);
 
-        // Highlight valid moves
-        highlightValidMoves(currentPosition.x, currentPosition.y);
+        highlightValidMoves(currentPosition.x, currentPosition.y); // Highlight valid moves
 
         hintPosition = null;
     }
@@ -755,6 +757,29 @@ public class KTController {
             if (obj == null || getClass() != obj.getClass()) return false;
             Point point = (Point) obj;
             return x == point.x && y == point.y;
+        }
+    }
+
+    @FXML
+    private void dataView() {
+        try {
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/KTDataView.fxml"));
+            Parent root = loader.load();
+
+            KTDataViewController dataViewController = loader.getController();
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+
+            Stage stage = (Stage) dataViewButton.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Knight's Tour Solutions Data");
+
+        } catch (IOException e) {
+            showAlert("Navigation Error", "Could not open data view: " + e.getMessage());
+            System.err.println("Error navigating to data view: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
