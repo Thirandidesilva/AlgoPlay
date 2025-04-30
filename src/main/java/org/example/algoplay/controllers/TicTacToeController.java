@@ -1,13 +1,16 @@
+
 package org.example.algoplay.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import org.example.algoplay.games.ttt.HeuristicAI;
 import org.example.algoplay.games.ttt.RecursiveMoveSelector;
 import org.example.algoplay.models.Difficulty;
@@ -18,21 +21,13 @@ import org.example.algoplay.services.UserSessionService;
 import org.example.algoplay.utils.TimeTracker;
 import org.example.algoplay.services.DatabaseServiceHelper;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.stage.Stage;
-import java.io.IOException;
 
 public class TicTacToeController implements Initializable {
 
@@ -42,11 +37,13 @@ public class TicTacToeController implements Initializable {
     @FXML private Label playerNameLabel;
     @FXML private Label moveCountLabel;
     @FXML private Button resetButton;
+    @FXML private Button mainMenuButton;
     @FXML private VBox setupPane;
     @FXML private HBox gameInfoPane;
     @FXML private TextField playerNameField;
     @FXML private ComboBox<String> difficultyComboBox;
     @FXML private Button startGameButton;
+    @FXML private Button dataViewButton;
 
     private final int SIZE = 5;
     private Button[][] buttons;
@@ -280,7 +277,6 @@ public class TicTacToeController implements Initializable {
 
     private List<AlgorithmMove> pendingAlgorithmMoves = new ArrayList<>();
 
-
     private void makeAIMove() {
         timeTracker.start();
 
@@ -437,8 +433,84 @@ public class TicTacToeController implements Initializable {
         return false;
     }
 
+
+
+
+    /**
+     * Navigates back to the main menu when the Back to Main Menu button is clicked
+     */
     @FXML
-    private Button dataViewButton;
+    private void backToMainMenu() {
+        try {
+            // Load the main menu FXML
+            URL mainMenuLocation = getClass().getResource("/fxml/MainMenu.fxml");
+
+            // Try alternative paths if the first one doesn't work
+            if (mainMenuLocation == null) {
+                mainMenuLocation = getClass().getResource("/fxml/main_menu.fxml");
+            }
+
+            if (mainMenuLocation == null) {
+                mainMenuLocation = getClass().getClassLoader().getResource("fxml/MainMenu.fxml");
+            }
+
+            // If still not found, provide a helpful error
+            if (mainMenuLocation == null) {
+                throw new IOException("Could not find the FXML file for the main menu. " +
+                        "Please ensure MainMenu.fxml exists in one of the resource paths.");
+            }
+
+            FXMLLoader loader = new FXMLLoader(mainMenuLocation);
+            Parent root = loader.load();
+
+            // Load the CSS file
+            URL cssUrl = getClass().getResource("/css/style.css");
+
+            // Try alternative paths if the first one doesn't work
+            if (cssUrl == null) {
+                cssUrl = getClass().getResource("css/style.css");
+            }
+
+            if (cssUrl == null) {
+                cssUrl = getClass().getClassLoader().getResource("css/style.css");
+            }
+
+            // Apply the CSS if found
+            if (cssUrl != null) {
+                root.getStylesheets().add(cssUrl.toExternalForm());
+            } else {
+                System.err.println("Warning: Could not find the CSS file /css/style.css");
+                // Continue without the CSS rather than failing
+            }
+
+            // Get the current stage from any node in the scene
+            Stage currentStage = (Stage) mainMenuButton.getScene().getWindow();
+
+            // Create new scene with the loaded root and apply CSS
+            Scene scene = new Scene(root);
+
+            // Apply CSS to the scene if found (alternative approach)
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
+            currentStage.setScene(scene);
+            currentStage.setTitle("AlgoPlay - Main Menu");
+            currentStage.show();
+
+        } catch (IOException e) {
+            System.err.println("Error navigating to Main Menu: " + e.getMessage());
+            e.printStackTrace();
+
+            // Show an error alert to the user
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Navigation Error");
+            alert.setHeaderText("Could not navigate to Main Menu");
+            alert.setContentText("Error details: " + e.getMessage() +
+                    "\n\nPlease make sure the MainMenu.fxml file exists in the correct location.");
+            alert.showAndWait();
+        }
+    }
 
     /**
      * Opens the TicTacToe Data View window when the Data View button is clicked
@@ -447,16 +519,16 @@ public class TicTacToeController implements Initializable {
     private void openDataView() {
         try {
             // Load the FXML file - Fixed path issue by checking resource availability and providing clearer error
-            URL dataViewLocation = getClass().getResource("/src/main/resources/fxml/TicTacToeDataView.fxml");
+            URL dataViewLocation = getClass().getResource("/fxml/TicTacToeDataView.fxml");
 
             // If the first path doesn't work, try alternatives
             if (dataViewLocation == null) {
-                dataViewLocation = getClass().getResource("/src/main/resources/fxml/TicTacToeDataView.fxml");
+                dataViewLocation = getClass().getResource("/fxml/TicTacToeDataView.fxml");
             }
 
             // If still null, try a third possible location
             if (dataViewLocation == null) {
-                dataViewLocation = getClass().getClassLoader().getResource("/src/main/resources/fxml/TicTacToeDataView.fxml");
+                dataViewLocation = getClass().getClassLoader().getResource("/fxml/TicTacToeDataView.fxml");
             }
 
             // If still not found, provide a helpful error

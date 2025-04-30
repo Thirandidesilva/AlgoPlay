@@ -82,6 +82,7 @@
                 <HBox alignment="CENTER" spacing="10.0">
                     <children>
                         <Button fx:id="resetButton" mnemonicParsing="false" onAction="#resetGame" styleClass="action-button" text="Reset Game" />
+                        <Button fx:id="mainMenuButton" mnemonicParsing="false" onAction="#backToMainMenu" styleClass="action-button" text="Back to Main Menu" />
                         <Button fx:id="dataViewButton" mnemonicParsing="false" onAction="#openDataView" styleClass="action-button" text="Data View" />
                     </children>
                 </HBox>
