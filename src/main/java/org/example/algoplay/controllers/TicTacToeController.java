@@ -1,7 +1,9 @@
 package org.example.algoplay.controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -14,6 +16,7 @@ import org.example.algoplay.models.User;
 import org.example.algoplay.services.DatabaseService;
 import org.example.algoplay.services.UserSessionService;
 import org.example.algoplay.utils.TimeTracker;
+import org.example.algoplay.services.DatabaseServiceHelper;
 
 import java.net.URL;
 import java.sql.ResultSet;
@@ -21,6 +24,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.stage.Stage;
+import java.io.IOException;
 
 public class TicTacToeController implements Initializable {
 
@@ -425,12 +437,59 @@ public class TicTacToeController implements Initializable {
         return false;
     }
 
+    @FXML
+    private Button dataViewButton;
 
+    /**
+     * Opens the TicTacToe Data View window when the Data View button is clicked
+     */
+    @FXML
+    private void openDataView() {
+        try {
+            // Load the FXML file - Fixed path issue by checking resource availability and providing clearer error
+            URL dataViewLocation = getClass().getResource("/src/main/resources/fxml/TicTacToeDataView.fxml");
 
+            // If the first path doesn't work, try alternatives
+            if (dataViewLocation == null) {
+                dataViewLocation = getClass().getResource("/src/main/resources/fxml/TicTacToeDataView.fxml");
+            }
 
+            // If still null, try a third possible location
+            if (dataViewLocation == null) {
+                dataViewLocation = getClass().getClassLoader().getResource("/src/main/resources/fxml/TicTacToeDataView.fxml");
+            }
 
+            // If still not found, provide a helpful error
+            if (dataViewLocation == null) {
+                throw new IOException("Could not find the FXML file for the data view. " +
+                        "Please ensure tic_tac_toe_data_view.fxml exists in one of the resource paths.");
+            }
 
+            FXMLLoader loader = new FXMLLoader(dataViewLocation);
+            Parent root = loader.load();
 
+            // Create new stage for data view
+            Stage dataViewStage = new Stage();
+            dataViewStage.setTitle("Tic-Tac-Toe Data View");
+            dataViewStage.setScene(new Scene(root));
+            dataViewStage.setMinWidth(900);
+            dataViewStage.setMinHeight(600);
+
+            // Show the stage
+            dataViewStage.show();
+        } catch (IOException e) {
+            System.err.println("Error opening Data View: " + e.getMessage());
+            e.printStackTrace();
+
+            // Show an error alert to the user
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error Loading Data View");
+            alert.setHeaderText("Could not load the Data View");
+            alert.setContentText("Error details: " + e.getMessage() +
+                    "\n\nPlease make sure the FXML file exists in the correct location.");
+            alert.showAndWait();
+        }
+    }
 
     private int saveUser(String username) {
         if (username == null || username.trim().isEmpty()) {
@@ -440,12 +499,10 @@ public class TicTacToeController implements Initializable {
         System.out.println("Creating new user: " + username);
 
         // Using the new executeInsert method for cleaner code
-        return DatabaseService.getInstance().executeInsert(
+        return DatabaseServiceHelper.getInstance().executeInsert(
                 "INSERT INTO users (username, password) VALUES (?, 'default') RETURNING user_id",
                 username);
     }
-
-
 
     private int saveTTTGameResult(int userId, String playerName, String difficulty, String result, int playerMoves, int aiMoves) {
         try {
@@ -458,7 +515,7 @@ public class TicTacToeController implements Initializable {
             System.out.println("Saving TTT game result for user ID: " + userId);
 
             // Using the new executeInsert method
-            return DatabaseService.getInstance().executeInsert(
+            return DatabaseServiceHelper.getInstance().executeInsert(
                     "INSERT INTO ttt_game_results (user_id, player_name, difficulty, result, player_moves, ai_moves) " +
                             "VALUES (?, ?, ?, ?, ?, ?) RETURNING result_id",
                     userId, playerName, difficulty, result, playerMoves, aiMoves);
@@ -481,7 +538,7 @@ public class TicTacToeController implements Initializable {
             System.out.println("Saving game round with User ID: " + userId + ", Game ID: " + gameId);
 
             // Using the new executeInsert method
-            return DatabaseService.getInstance().executeInsert(
+            return DatabaseServiceHelper.getInstance().executeInsert(
                     "INSERT INTO game_rounds (game_id, user_id, is_correct, score) " +
                             "VALUES (?, ?, ?, ?) RETURNING round_id",
                     gameId, userId, isCorrect, score);
@@ -540,13 +597,12 @@ public class TicTacToeController implements Initializable {
         }
     }
 
-
     private void saveAlgorithmPerformance(int resultId, String algorithmName, long executionTime, int moveNumber) {
         try {
             // If we don't have a valid resultId yet, create a temporary one
             if (resultId <= 0) {
                 // Create a temporary result record
-                resultId = DatabaseService.getInstance().executeInsert(
+                resultId = DatabaseServiceHelper.getInstance().executeInsert(
                         "INSERT INTO ttt_game_results (user_id, player_name, difficulty, result, player_moves, ai_moves) " +
                                 "VALUES (?, ?, ?, ?, ?, ?) RETURNING result_id",
                         userId, playerName, currentDifficulty.name(), "in_progress", playerMoves, aiMoves);
@@ -578,5 +634,4 @@ public class TicTacToeController implements Initializable {
             e.printStackTrace();
         }
     }
-
 }

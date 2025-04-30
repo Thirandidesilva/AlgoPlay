@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.algoplay.controllers.TicTacToeDataViewController"
+            prefHeight="600.0" prefWidth="1000.0" stylesheets="@/css/tictactoe.css">
+    <top>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label styleClass="title-label" text="Tic-Tac-Toe Data View" />
+            </HBox>
+            <HBox spacing="10">
+                <Button fx:id="refreshButton" text="Refresh Data" onAction="#refreshData"/>
+                <Button fx:id="exportButton" text="Export to CSV" onAction="#exportToCsv"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TableView fx:id="dataTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="usernameColumn" text="Username" prefWidth="100.0"/>
+                <TableColumn fx:id="playerNameColumn" text="Player Name" prefWidth="100.0"/>
+                <TableColumn fx:id="gameColumn" text="Game" prefWidth="120.0"/>
+                <TableColumn fx:id="difficultyColumn" text="Difficulty" prefWidth="80.0"/>
+                <TableColumn fx:id="resultColumn" text="Result" prefWidth="80.0"/>
+                <TableColumn fx:id="playerMovesColumn" text="Player Moves" prefWidth="100.0"/>
+                <TableColumn fx:id="aiMovesColumn" text="AI Moves" prefWidth="100.0"/>
+                <TableColumn fx:id="algorithmColumn" text="Algorithm" prefWidth="100.0"/>
+                <TableColumn fx:id="avgExecTimeColumn" text="Avg Exec Time (ms)" prefWidth="140.0"/>
+                <TableColumn fx:id="maxExecTimeColumn" text="Max Exec Time (ms)" prefWidth="140.0"/>
+                <TableColumn fx:id="createdAtColumn" text="Date" prefWidth="120.0"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label fx:id="statusLabel" text="Ready" />
+        </HBox>
+    </bottom>
+</BorderPane>
