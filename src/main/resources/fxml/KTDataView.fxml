@@ -23,6 +23,7 @@
                 <Label text="Filter:" />
                 <ComboBox fx:id="filterComboBox" prefWidth="150" />
                 <Button text="Refresh" onAction="#refreshData" />
+                <Button text="Export to CSV" onAction="#exportToCSV" />
                 <Region HBox.hgrow="ALWAYS" />
                 <!-- go back button -->
                 <Button fx:id="backButton" text="Back to Game" onAction="#backToGame" />
