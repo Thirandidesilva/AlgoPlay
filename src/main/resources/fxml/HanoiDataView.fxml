@@ -20,16 +20,6 @@
                 <Button text="Export to CSV" onAction="#exportToCSV"/>
             </HBox>
         </VBox>
-        <VBox spacing="10">
-            <padding>
-                <Insets top="15" right="15" bottom="15" left="15"/>
-            </padding>
-            <Label text="Tower of Hanoi Data View" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Button text="Refresh Data" onAction="#refreshData"/>
-                <Button text="Export to CSV" onAction="#exportToCSV"/>
-            </HBox>
-        </VBox>
     </top>
 
     <center>

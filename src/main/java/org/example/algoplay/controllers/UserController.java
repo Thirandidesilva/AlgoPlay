@@ -193,7 +193,7 @@ public class UserController {
             MainMenuController mainMenuController = loader.getController();
 
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/Style.css").toExternalForm());
 
             Stage stage = (Stage) backButton.getScene().getWindow();
             stage.setScene(scene);

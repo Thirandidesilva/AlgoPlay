@@ -73,6 +73,11 @@ public class HanoiDataViewController implements Initializable {
         // Make the table resizable
         dataTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
+        // Setup back button style
+        if (backToGameButton != null) {
+            backToGameButton.getStyleClass().add("back-button");
+        }
+
         // Load data
         refreshData();
     }
@@ -125,16 +130,17 @@ public class HanoiDataViewController implements Initializable {
             }
         }
     }
+
     @FXML
     private void backToGame() {
         try {
             // Load the Tower of Hanoi FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/toh.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Toh.fxml"));
             Parent tohRoot = loader.load();
 
             // Create new scene
             Scene tohScene = new Scene(tohRoot);
-            tohScene.getStylesheets().add(getClass().getResource("/css/toh.css").toExternalForm());
+            tohScene.getStylesheets().add(getClass().getResource("/css/Toh.css").toExternalForm());
 
             // Get the current stage
             Stage stage = (Stage) dataTable.getScene().getWindow();
@@ -143,9 +149,15 @@ public class HanoiDataViewController implements Initializable {
             stage.setScene(tohScene);
             stage.setTitle("Tower of Hanoi");
 
+            // Log navigation
+            System.out.println("Navigating back to Tower of Hanoi game");
+
         } catch (Exception e) {
             System.err.println("Error returning to Tower of Hanoi game");
             e.printStackTrace();
+
+            // Display error in the status label
+            statusLabel.setText("Error returning to game: " + e.getMessage());
         }
     }
 
