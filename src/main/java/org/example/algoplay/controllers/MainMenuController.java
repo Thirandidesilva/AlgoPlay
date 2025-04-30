@@ -1,5 +1,6 @@
 package org.example.algoplay.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -9,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import org.example.algoplay.EightQueens.MainApp;
 import org.example.algoplay.controllers.games.TohController;
 import org.example.algoplay.models.User;
 import org.example.algoplay.view.HomeScreen;
@@ -80,8 +82,8 @@ public class MainMenuController {
             }
 
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-            scene.getStylesheets().add(getClass().getResource("/css/user.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/Style.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/css/User.css").toExternalForm());
 
             Stage stage = (Stage) gameContainer.getScene().getWindow();
             stage.setScene(scene);
@@ -200,14 +202,28 @@ public class MainMenuController {
             switch (gameId) {
                 case "tictactoe":
                     // This would be implemented for TicTacToe
-                    //fxmlPath = "/fxml/TicTacToe.fxml";
+                    fxmlPath = "/fxml/TicTacToe.fxml";
                     break;
                 case "toh":
-                    fxmlPath = "/fxml/toh.fxml";
+                    fxmlPath = "/fxml/Toh.fxml";
                     break;
                 case "queens":
-                    // For other games
-                    //fxmlPath = "/fxml/QueensPuzzle.fxml";
+                    // Launch the Eight Queens Application
+                    new Thread(() -> {
+                        // If MainApp.main() has already been called once in your application:
+                        Platform.runLater(() -> {
+                            try {
+                                MainApp queensApp = new MainApp();
+                                Stage newStage = new Stage();
+                                queensApp.start(newStage);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        });
+
+                        // OR if MainApp hasn't been launched yet:
+                        // MainApp.main(null);
+                    }).start();
                     break;
                 case "knights":
                     fxmlPath = "/fxml/KTView.fxml";
@@ -240,11 +256,11 @@ public class MainMenuController {
 
             // Create new scene with the game content
             Scene gameScene = new Scene(gameRoot);
-            gameScene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+            gameScene.getStylesheets().add(getClass().getResource("/css/Style.css").toExternalForm());
 
             // If the game has specific stylesheets, add them
             if (gameId.equals("toh")) {
-                gameScene.getStylesheets().add(getClass().getResource("/css/toh.css").toExternalForm());
+                gameScene.getStylesheets().add(getClass().getResource("/css/Toh.css").toExternalForm());
             }
 
             // Set the new scene on the stage

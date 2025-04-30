@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.algoplay.controllers.KTDataViewController"
+            prefHeight="600.0" prefWidth="900.0"
+            styleClass="background">
+
+    <top>
+        <VBox spacing="10" alignment="CENTER">
+            <padding>
+                <Insets top="15" right="15" bottom="15" left="15"/>
+            </padding>
+
+            <Label text="Knight's Tour Solutions Data" styleClass="header-label"/>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Filter:" />
+                <ComboBox fx:id="filterComboBox" prefWidth="150" />
+                <Button text="Refresh" onAction="#refreshData" />
+                <Button text="Export to CSV" onAction="#exportToCSV" />
+                <Region HBox.hgrow="ALWAYS" />
+                <!-- go back button -->
+                <Button fx:id="backButton" text="Back to Game" onAction="#backToGame" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <SplitPane dividerPositions="0.6" orientation="VERTICAL">
+            <TableView fx:id="solutionsTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="idColumn" text="ID" prefWidth="50" />
+                    <TableColumn fx:id="usernameColumn" text="Username" prefWidth="120" />
+                    <TableColumn fx:id="algorithmColumn" text="Algorithm" prefWidth="100" />
+                    <TableColumn fx:id="startPositionColumn" text="Start Position" prefWidth="100" />
+                    <TableColumn fx:id="executionTimeColumn" text="Time (ms)" prefWidth="100" />
+                    <TableColumn fx:id="dateColumn" text="Date" prefWidth="150" />
+                </columns>
+                <placeholder>
+                    <Label text="No solutions available" />
+                </placeholder>
+            </TableView>
+
+            <HBox spacing="15">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
+
+                <VBox alignment="CENTER" spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="Solution Preview" styleClass="sub-header-label" />
+                    <GridPane fx:id="solutionPreviewGrid" alignment="CENTER"
+                              hgap="1" vgap="1" maxWidth="205" maxHeight="205" />
+                    <Label fx:id="solutionStatsLabel" wrapText="true" />
+                </VBox>
+
+                <VBox spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <TabPane tabClosingPolicy="UNAVAILABLE">
+                        <Tab text="Execution Time">
+                            <BarChart fx:id="executionTimeChart" legendSide="RIGHT">
+                                <xAxis>
+                                    <CategoryAxis side="BOTTOM" />
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis side="LEFT" label="Time (ms)" />
+                                </yAxis>
+                            </BarChart>
+                        </Tab>
+                        <Tab text="Algorithm Distribution">
+                            <PieChart fx:id="algorithmDistributionChart" legendSide="RIGHT" />
+                        </Tab>
+                    </TabPane>
+                </VBox>
+            </HBox>
+        </SplitPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10">
+            <padding>
+                <Insets top="5" right="15" bottom="15" left="15"/>
+            </padding>
+            <Label text="*Click on a solution to view its path" />
+        </HBox>
+    </bottom>
+
+</BorderPane>
