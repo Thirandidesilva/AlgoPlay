@@ -21,7 +21,12 @@ import org.example.algoplay.controllers.games.KTController;
 import org.example.algoplay.services.DatabaseManager;
 import org.example.algoplay.services.UserSessionService;
 
+import javafx.stage.FileChooser;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -242,6 +247,70 @@ public class KTDataViewController {
         loadSolutionsData();
         updateSolutionsView();
         updateCharts();
+    }
+
+    @FXML
+    private void exportToCSV() {
+        try {
+            // Get current displayed solutions
+            ObservableList<DatabaseManager.SolutionRecord> solutions = solutionsTable.getItems();
+
+            if (solutions.isEmpty()) {
+                showAlert("No Data", "There are no solutions to export.");
+                return;
+            }
+
+            // Create file chooser
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save CSV File");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+            fileChooser.setInitialFileName("knights_tour_solutions_" +
+                    new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".csv");
+
+            // Show save dialog
+            File file = fileChooser.showSaveDialog(backButton.getScene().getWindow());
+
+            if (file != null) {
+                // Write to CSV file
+                try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+                    // Write header
+                    writer.println("ID,Username,Algorithm,Start Position,Execution Time (ms),Solution Path,Date");
+
+                    // Write data rows
+                    for (DatabaseManager.SolutionRecord solution : solutions) {
+                        writer.println(
+                                solution.getId() + "," +
+                                        csvEscape(solution.getUsername()) + "," +
+                                        csvEscape(solution.getAlgorithm()) + "," +
+                                        csvEscape(solution.getStartPosition()) + "," +
+                                        solution.getExecutionTime() + "," +
+                                        csvEscape(solution.getSolutionPath()) + "," +
+                                        csvEscape(dateFormat.format(solution.getCreatedAt()))
+                        );
+                    }
+
+                    showAlert("Export Successful", "Solutions exported to " + file.getName());
+                }
+            }
+        } catch (Exception e) {
+            showAlert("Export Error", "Failed to export solutions: " + e.getMessage());
+            System.err.println("Failed to export solutions: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Helper method to escape CSV values
+    private String csvEscape(String value) {
+        if (value == null) {
+            return "";
+        }
+        // Escape quotes and wrap in quotes if contains comma or newline
+        boolean needsQuoting = value.contains(",") || value.contains("\"") || value.contains("\n");
+        if (needsQuoting) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
 
     @FXML
