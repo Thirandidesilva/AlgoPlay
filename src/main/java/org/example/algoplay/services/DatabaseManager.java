@@ -1,6 +1,6 @@
 package org.example.algoplay.services;
 
-import org.example.algoplay.services.DatabaseService;
+import org.example.algoplay.services.DatabaseService; //Database service class
 import org.example.algoplay.controllers.games.KTController.Point;
 
 import java.sql.*;
@@ -100,7 +100,7 @@ public class DatabaseManager {
     }
 
     //Retrieves all solutions from the database
-     public List<SolutionRecord> getAllSolutions() {
+    public List<SolutionRecord> getAllSolutions() {
         List<SolutionRecord> solutions = new ArrayList<>();
         String sql = "SELECT * FROM knight_tour_solutions " +
                 "ORDER BY created_at DESC";
@@ -131,7 +131,7 @@ public class DatabaseManager {
     }
 
     //Get average execution time grouped by algorithm
-     public Map<String, Double> getAverageExecutionTimeByAlgorithm() {
+    public Map<String, Double> getAverageExecutionTimeByAlgorithm() {
         Map<String, Double> averageTimes = new HashMap<>();
         String sql = "SELECT algorithm, AVG(execution_time) as avg_time FROM knight_tour_solutions GROUP BY algorithm";
 
@@ -210,7 +210,7 @@ public class DatabaseManager {
     }
 
     //Converts a solution path string to a list of points
-     public List<Point> convertPathStringToPoints(String pathString) {
+    public List<Point> convertPathStringToPoints(String pathString) {
         List<Point> points = new ArrayList<>();
         String[] coords = pathString.split(";");
 
@@ -233,7 +233,7 @@ public class DatabaseManager {
     }
 
     //Record class to hold solution data
-     public static class SolutionRecord {
+    public static class SolutionRecord {
         private final int id;
         private final int gameId;
         private final int userId;
