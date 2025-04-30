@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 public class TspDatabaseManager {
 
-    private final String jdbcUrl = "jdbc:postgresql://localhost:5432/tsp_database";
+    private final String jdbcUrl = "jdbc:postgresql://localhost:5432/AlgoPlay";
     private final String username = "postgres";
     private final String password = "G0tb1tf3v3rh1t"; // Replace securely
 
@@ -57,30 +57,66 @@ public class TspDatabaseManager {
                 }
             }
 
-            // Insert each solver run and corresponding path
-            String insertRun = "INSERT INTO tsp_runs (session_id, solver_name, path_length, execution_time_ms) VALUES (?, ?, ?, ?) RETURNING id";
-            String insertPath = "INSERT INTO tsp_paths (run_id, city_order) VALUES (?, ?)";
+            // Replace old insertRun and insertPath SQL with two sets
+            String insertAlgoRun = "INSERT INTO algorithm_executions (session_id, algorithm_name, path_length, execution_time_ms) VALUES (?, ?, ?, ?) RETURNING id";
+            String insertUserRun = "INSERT INTO user_attempts (session_id, user_id, path_length, execution_time_ms) VALUES (?, ?, ?, ?) RETURNING id";
+
+            String insertAlgoPath = "INSERT INTO algorithm_paths (execution_id, city_order) VALUES (?, ?)";
+            String insertUserPath = "INSERT INTO user_paths (attempt_id, city_order) VALUES (?, ?)";
 
             for (TspPerformanceTracker.PerformanceData data : results.values()) {
+                String solverName = data.getSolutionName();
+
+                boolean isUser = "A_Real_Person".equalsIgnoreCase(solverName);
+
                 int runId;
-                try (PreparedStatement runStmt = conn.prepareStatement(insertRun)) {
-                    runStmt.setInt(1, sessionId);
-                    runStmt.setString(2, data.getSolutionName());
-                    runStmt.setInt(3, data.getPathLength());
-                    runStmt.setLong(4, data.getExecutionTimeMs());
 
-                    ResultSet rs = runStmt.executeQuery();
-                    if (rs.next()) {
-                        runId = rs.getInt("id");
-                    } else {
-                        throw new SQLException("Failed to insert run.");
+                if (isUser) {
+                    // Insert into user_attempts
+                    try (PreparedStatement runStmt = conn.prepareStatement(insertUserRun)) {
+                        runStmt.setInt(1, sessionId);
+                        if (userId != null) runStmt.setInt(2, userId);
+                        else runStmt.setNull(2, Types.INTEGER);
+                        runStmt.setInt(3, data.getPathLength());
+                        runStmt.setLong(4, data.getExecutionTimeMs());
+
+                        ResultSet rs = runStmt.executeQuery();
+                        if (rs.next()) {
+                            runId = rs.getInt("id");
+                        } else {
+                            throw new SQLException("Failed to insert user attempt.");
+                        }
                     }
-                }
 
-                try (PreparedStatement pathStmt = conn.prepareStatement(insertPath)) {
-                    pathStmt.setInt(1, runId);
-                    pathStmt.setString(2, data.getPath().toString());
-                    pathStmt.executeUpdate();
+                    // Insert into user_paths
+                    try (PreparedStatement pathStmt = conn.prepareStatement(insertUserPath)) {
+                        pathStmt.setInt(1, runId);
+                        pathStmt.setString(2, data.getPath().toString());
+                        pathStmt.executeUpdate();
+                    }
+
+                } else {
+                    // Insert into algorithm_executions
+                    try (PreparedStatement runStmt = conn.prepareStatement(insertAlgoRun)) {
+                        runStmt.setInt(1, sessionId);
+                        runStmt.setString(2, solverName);
+                        runStmt.setInt(3, data.getPathLength());
+                        runStmt.setLong(4, data.getExecutionTimeMs());
+
+                        ResultSet rs = runStmt.executeQuery();
+                        if (rs.next()) {
+                            runId = rs.getInt("id");
+                        } else {
+                            throw new SQLException("Failed to insert algorithm execution.");
+                        }
+                    }
+
+                    // Insert into algorithm_paths
+                    try (PreparedStatement pathStmt = conn.prepareStatement(insertAlgoPath)) {
+                        pathStmt.setInt(1, runId);
+                        pathStmt.setString(2, data.getPath().toString());
+                        pathStmt.executeUpdate();
+                    }
                 }
             }
 

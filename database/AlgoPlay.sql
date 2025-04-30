@@ -50,3 +50,11 @@ CREATE TABLE hanoi_algorithm_performance (
     execution_time BIGINT NOT NULL,
     move_sequence TEXT
 );
+
+-- Add games to DataBase table
+INSERT INTO public.games (game_id, game_name) VALUES
+(1, 'Tic-Tac-Toe'),
+(2, 'Tower-Of-Hanoi'),
+(3, 'Traveling Salesman Problem'),
+(4, 'Eight Queens Puzzle'),
+(5, 'Knights Tour Problem');

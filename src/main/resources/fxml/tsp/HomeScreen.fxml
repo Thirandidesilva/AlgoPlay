@@ -51,6 +51,9 @@
                                 <Font name="Monospace" size="14.0" />
                             </font>
                         </Button>
+                        <Button fx:id="tspSessionButton"
+                                text="TSP Sessions"
+                                onAction="#handleTspSessionButton"/>
                         <Region HBox.hgrow="ALWAYS" />
                         <HBox alignment="CENTER" spacing="10.0">
                             <children>
